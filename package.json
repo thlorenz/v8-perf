@@ -1,0 +1,37 @@
+{
+  "name": "v8-perf",
+  "version": "0.0.0",
+  "description": "Notes and resources related to v8 and thus Node.js performance.",
+  "scripts": {
+    "test-main": "set -e; for t in test/*.js; do $t; done",
+    "test-0.8": "nave use 0.8 npm run test-main",
+    "test-0.10": "nave use 0.10 npm run test-main",
+    "test-0.11": "nave use 0.11 npm run test-main",
+    "test": "npm run test-0.8 && npm run test-0.10 && npm run test-0.11"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/thlorenz/v8-perf.git"
+  },
+  "homepage": "https://github.com/thlorenz/v8-perf",
+  "dependencies": {
+    "ansicolors": "~0.3.2"
+  },
+  "devDependencies": {
+    "nave": "~0.4.3",
+    "tap": "~0.4.9"
+  },
+  "keywords": [],
+  "author": {
+    "name": "Thorsten Lorenz",
+    "email": "thlorenz@gmx.de",
+    "url": "http://thlorenz.com"
+  },
+  "license": {
+    "type": "MIT",
+    "url": "https://github.com/thlorenz/v8-perf/blob/master/LICENSE"
+  },
+  "engine": {
+    "node": ">=0.8"
+  }
+}
