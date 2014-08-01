@@ -5,7 +5,7 @@
 - [Theory](#theory)
   - [Objects](#objects)
     - [Shallow size](#shallow-size)
-    - [Retaines size](#retaines-size)
+    - [Retained size](#retained-size)
       - [GC roots](#gc-roots)
     - [Storage](#storage)
     - [Object Groups](#object-groups)
@@ -29,6 +29,7 @@
       - [Dominators View](#dominators-view)
       - [Retainer View](#retainer-view)
     - [Constructors listed in Views](#constructors-listed-in-views)
+      - [Closures](#closures)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -195,7 +196,6 @@ function foo() {
 }
 ```
 
-
 #### Views
 
 [overview](https://developer.chrome.com/devtools/docs/heap-profiling#basics)
@@ -295,3 +295,12 @@ Additional entry points only present when profiling a Node.js app:
 - *(array, string, number, regexp)* list of object types with properties which reference an Array, String, Number or
   regular expression
 - *(compiled code)* *SharedFunctionInfos* have no context and standibetween functions that do have context
+
+##### Closures
+
+[read](http://zetafleet.com/blog/google-chromes-heap-profiler-and-memory-timeline)
+
+- source of unintentional memory retention
+- v8 will not clean up **any** memory of a closure untiil **all** members of the closure have gone out of scope
+- therefore they should be used sparingly to avoid unnecessary [semantic
+  garbage](https://en.wikipedia.org/wiki/Garbage_(computer_science))
