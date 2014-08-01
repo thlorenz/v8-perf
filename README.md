@@ -22,13 +22,13 @@ It's best to dig into the source to confirm assumptions about v8 performance fir
 ### documentation
 
 Documentation for specific v8 versions generated from the v8 source and included with the
-[gh-pages](https://thlorenz.github.io/v8-perf/) of this repo.
+[gh-pages](https://thlorenz.github.io/v8-dox/) of the v8-dox repo.
 
 Below is a list of the documentation along with links to the code on github and the related Node.js version.
 
-- [v8 3.11.10](https://thlorenz.github.io/v8-perf/build/v8-3.11.10/html/) | [code](https://github.com/v8/v8/tree/3.11.10) | [node 0.8.26](https://github.com/joyent/node/tree/v0.8.26)
-- [v8 3.14.5](https://thlorenz.github.io/v8-perf/build/v8-3.14.5/html/)   | [code](https://github.com/v8/v8/tree/3.14.5)  | [node 0.10.28](https://github.com/joyent/node/tree/v0.10.28)
-- [v8 3.25.30](https://thlorenz.github.io/v8-perf/build/v8-3.25.30/html/) | [code](https://github.com/v8/v8/tree/3.25.30) | [node 0.11.13](https://github.com/joyent/node/tree/v0.11.13)
+- [v8 3.11.10](https://thlorenz.github.io/v8-dox/build/v8-3.11.10/html/) | [code](https://github.com/v8/v8/tree/3.11.10) | [node 0.8.26](https://github.com/joyent/node/tree/v0.8.26)
+- [v8 3.14.5](https://thlorenz.github.io/v8-dox/build/v8-3.14.5/html/)   | [code](https://github.com/v8/v8/tree/3.14.5)  | [node 0.10.28](https://github.com/joyent/node/tree/v0.10.28)
+- [v8 3.25.30](https://thlorenz.github.io/v8-dox/build/v8-3.25.30/html/) | [code](https://github.com/v8/v8/tree/3.25.30) | [node 0.11.13](https://github.com/joyent/node/tree/v0.11.13)
 
 The documentation includes code that contains links to related code, data types, etc. which is highly useful to explore
 how the pieces fit together.
