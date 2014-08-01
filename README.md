@@ -5,6 +5,7 @@ Notes and resources related to v8 and thus Node.js performance.
 - [data types](https://github.com/thlorenz/v8-perf/blob/master/data-types.md)
 - [v8 compiler](https://github.com/thlorenz/v8-perf/blob/master/compiler.md)
 - [v8 garbage collector](https://github.com/thlorenz/v8-perf/blob/master/gc.md)
+- [memory profiling](https://github.com/thlorenz/v8-perf/blob/master/memory-profiling.md)
 - [performance profiling](https://github.com/thlorenz/v8-perf/blob/master/performance-profiling.md)
 - [runtime functions](https://github.com/thlorenz/v8-perf/blob/master/runtime-functions.md)
 
