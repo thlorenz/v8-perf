@@ -37,13 +37,14 @@
 ### Objects
 
 [read](https://developer.chrome.com/devtools/docs/javascript-memory-profiling#object-sizes)
+[read](https://developer.chrome.com/devtools/docs/memory-analysis-101#object_sizes)
 
 #### Shallow size
 
 - memory held by object **itself**
 - arrays and strings may have significant shallow size
 
-#### Retaines size
+#### Retained size
 
 - memory that is freed once object itself is deleted due to it becoming unreachable from *GC roots*
 - held by object *implicitly*
@@ -84,18 +85,24 @@
 ### Retainers
 
 [read](https://developer.chrome.com/devtools/docs/javascript-memory-profiling#objects-retaining-tree)
+[read](https://developer.chrome.com/devtools/docs/memory-analysis-101#retaining_paths)
 
 - shown at the  bottom inside heap snapshots UI 
 - *nodes/objects* labelled by name of constructor function used to build them
 - *edges* labelled using property names 
+- *retaining path* is any path from *GC roots* to an object, if such a path doesn't exist the object is *unreachable*
+  and subject to being garbage collected
 
 ### Dominators
 
 [read](https://developer.chrome.com/devtools/docs/javascript-memory-profiling#dominators)
+[read](https://en.wikipedia.org/wiki/Dominator_(graph_theory))
+[read](https://developer.chrome.com/devtools/docs/memory-analysis-101#dominators)
 
 - can be seen in [**Dominators** view](#dominators-view)
 - tree structure in which each object has **one** dominator
 - if *dominator* is deleted the *dominated* node is no longer reachable from *GC root*
+- node **d** dominates a node **n** if every path from the start node to **n** must go through **d** 
 
 ### Causes for Leaks
 
@@ -191,6 +198,8 @@ function foo() {
 
 #### Views
 
+[overview](https://developer.chrome.com/devtools/docs/heap-profiling#basics)
+
 ##### Color Coding
 
 [read](https://developer.chrome.com/devtools/docs/javascript-memory-profiling#looking-up-color-coding)
@@ -223,8 +232,9 @@ Properties and values are colored according to their types.
 ##### Comparison View
 
 - compares multiple snapshots to each other
+- shows diff of both and delta in ref counts and freed and newly allocated memory
 - used to find leaked objects
-- after starting and completing (or canceling) the action, no garbage is left
+- after starting and completing (or canceling) the action, no garbage related to that action should be left
 - note that garbage is collected each time a snapshot is taken, therefore remaining items are still referenced
 
 
@@ -243,6 +253,7 @@ In more advanced scenarios you may take more snapshots and compare those.
 
 - birds eye view of apps object structure
 - low level, allows peeking inside function closures and look at VM internal objects
+- used to determine what keeps objects from being collected
 
 ###### Entry Points
 
@@ -265,7 +276,8 @@ Additional entry points only present when profiling a Node.js app:
 - shows dominators tree of heap
 - similar to containment view but lacks property names since dominator may not have direct reference to all objects it
   dominates
-- useful to identify memory accumulation points
+- useful to identify memory accumulation points 
+- also used to ensure that objects are well contained instead of hanging around due to GC not working properly
 
 ##### Retainer View
 
