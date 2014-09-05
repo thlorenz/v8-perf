@@ -370,7 +370,7 @@ Point.prototype.pointDistance = function () { /* calculates distance */ }
 
 ### Typed Arrays
 
-[blog](http://mrale.ph/blog/2011/05/12/dangers-of-cross-language-benchmark-games.htm) |
+[blog](http://mrale.ph/blog/2011/05/12/dangers-of-cross-language-benchmark-games.html) |
 [spec](https://www.khronos.org/registry/typedarray/specs/latest/)
 
 - difference is in semantics of indexed properties
