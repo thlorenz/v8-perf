@@ -130,7 +130,7 @@ or
 [read](https://developers.google.com/v8/design#prop_access)
 
 
-- v8 describes the structure of objects using maps aka *hidden classes*
+- v8 describes the structure of objects using maps used to create *hidden classes* and match data types
   - resembles a table of descriptors with one entry for each property
   - map contains info about size of the object
   - map contains info about pointers to constructors and prototypes
@@ -195,7 +195,7 @@ p.z = z;
 ```js
 function Point(x, y, reverse) {
   // Map M0
-  //  "x": Transition to M1 at offset 12
+  //  "x": Transition to M1 at offset 12ak
   //  "y": Transition to M2 at offset 12
   if (reverse) {
     // variation 1
