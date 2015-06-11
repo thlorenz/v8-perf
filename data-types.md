@@ -338,7 +338,7 @@ Point.prototype.pointDistance = function () { /* calculates distance */ }
 
 - contiguous (non-sparse)
 - `0` based
-- smaller than `100K` elements [see this test](https://github.com/thlorenz/v8-perf/blob/master/test/fast-elements.js)
+- smaller than `100K` elements [see this test](test/fast-elements.js)
 
 ### Dictionary Elements
 

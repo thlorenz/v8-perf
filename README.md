@@ -2,12 +2,12 @@
 
 Notes and resources related to v8 and thus Node.js performance.
 
-- [data types](https://github.com/thlorenz/v8-perf/blob/master/data-types.md)
-- [v8 compiler](https://github.com/thlorenz/v8-perf/blob/master/compiler.md)
-- [v8 garbage collector](https://github.com/thlorenz/v8-perf/blob/master/gc.md)
-- [memory profiling](https://github.com/thlorenz/v8-perf/blob/master/memory-profiling.md)
-- [performance profiling](https://github.com/thlorenz/v8-perf/blob/master/performance-profiling.md)
-- [runtime functions](https://github.com/thlorenz/v8-perf/blob/master/runtime-functions.md)
+- [data types](data-types.md)
+- [v8 compiler](compiler.md)
+- [v8 garbage collector](gc.md)
+- [memory profiling](memory-profiling.md)
+- [performance profiling](performance-profiling.md)
+- [runtime functions](runtime-functions.md)
 
 ## v8 source and documentation
 
@@ -49,5 +49,5 @@ npm test
 
 ### Tools, Features used in Tests
 
-- [**runtime functions**](https://github.com/thlorenz/v8-perf/blob/master/runtime-functions.md): via the `--allow-runtime-functions`
-  flag, i.e. see [this test](https://github.com/thlorenz/v8-perf/blob/master/test/fast-elements.js)
+- [**runtime functions**](runtime-functions.md): via the `--allow-runtime-functions`
+  flag, i.e. see [this test](test/fast-elements.js)
