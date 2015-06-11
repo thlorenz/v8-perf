@@ -68,7 +68,7 @@
 
 [read](https://developer.chrome.com/devtools/docs/javascript-memory-profiling#javascript-object-representation)
 
-[read](https://github.com/thlorenz/v8-perf/blob/master/data-types.md)
+[read](data-types.md)
 
 - primitives are leafs or terminating nodes
 - strings stored in *VM heap* or externally (accessible via *wrapper object*)
@@ -129,7 +129,7 @@
 
 - not available to use with Node.js ATM
 
-![memory-timeline](https://github.com/thlorenz/v8-perf/blob/master/assets/devtools-memory-timeline.png)
+![memory-timeline](assets/devtools-memory-timeline.png)
 
 - memory usage overview over time
 - can be used to identify memory leaks and/or performance bottlenecks caused by a *busy* garbage collector
@@ -141,11 +141,11 @@
 
 ##### Drilling into Events
 
-![memory-timeline-interaction](https://github.com/thlorenz/v8-perf/blob/master/assets/devtools-memory-timeline-01.gif)
+![memory-timeline-interaction](assets/devtools-memory-timeline-01.gif)
 
 ### DevTools Heap Profiler
 
-![memory-heapsnapshot](https://github.com/thlorenz/v8-perf/blob/master/assets/devtools-heapsnapshot.png)
+![memory-heapsnapshot](assets/devtools-heapsnapshot.png)
 
 [read](https://developer.chrome.com/devtools/docs/javascript-memory-profiling#heap-profiler)
 
@@ -275,7 +275,7 @@ Properties and values are colored according to their types.
   - the *Size Delta* will tell you how much memory couldn't be collected
 
 
-![compare-snapshots](https://github.com/thlorenz/v8-perf/blob/master/assets/devtools-compare-snapshots.png)
+![compare-snapshots](assets/devtools-compare-snapshots.png)
 
 ###### Advanced Comparison Technique
 
@@ -298,7 +298,7 @@ Use at least three snapshots and compare those.
 - if you see any *Objects* that shouldn't be there but are in doubt create a 4th snapshot and select *Objects allocated
   between Snapshot 1 and 2* as shown in the picture below
 
-![4-snapshots](https://github.com/thlorenz/v8-perf/blob/master/assets/devtools-4-snapshots.png)
+![4-snapshots](assets/devtools-4-snapshots.png)
 
 ##### Object Allocation Tracker
 
@@ -318,7 +318,7 @@ Use at least three snapshots and compare those.
 - needs to be enabled in settings *General/Profiler/Record heap allocation stack traces*
 - shows stack traces of executed code that led to the object being allocated
 
-![allocation-stack](https://github.com/thlorenz/v8-perf/blob/master/assets/devtools-allocation-stack.png)
+![allocation-stack](assets/devtools-allocation-stack.png)
 
 ##### Containment View
 
