@@ -388,7 +388,7 @@ Point.prototype.pointDistance = function () { /* calculates distance */ }
 - don't load uninitialized or deleted elements [watch](http://youtu.be/UJPdhx5zTaw?t=19m30s) |
   [slide](http://v8-io12.appspot.com/index.html#43)
 - use literal initializer for Arrays with mixed values
-- don't store non-numeric valuse in numeric arrays
+- don't store non-numeric values in numeric arrays
   - causes boxing and efficient code that was generated for manipulating values can no longer be used
 - use typed arrays whenever possible
 - copying an array, you should avoid copying from the back (higher indices to lower indices) because this will almost certainly trigger dictionary mode
