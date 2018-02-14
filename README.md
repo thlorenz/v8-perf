@@ -1,4 +1,6 @@
-# v8-perf
+# v8-perf 
+
+<a href="https://www.patreon.com/bePatron?u=8663953"><img alt="become a patron" src="https://c5.patreon.com/external/logo/become_a_patron_button.png" height="35px"></a>
 
 Notes and resources related to v8 and thus Node.js performance.
 
