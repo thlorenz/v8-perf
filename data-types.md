@@ -1,40 +1,43 @@
+# Data Types
+
+_find the previous version of this document at
+[crankshaft/data-types.md](crankshaft/data-types.md)_
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of Contents**  *generated with [DocToc](http://doctoc.herokuapp.com/)*
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
-- [Data Types](#data-types)
-  - [Efficiently Representing Values and Tagging](#efficiently-representing-values-and-tagging)
-    - [Considerations](#considerations)
-  - [Objects](#objects)
-    - [Structure](#structure)
-    - [Object Properties](#object-properties)
-    - [Hash Tables](#hash-tables)
-      - [Key Value Insertion](#key-value-insertion)
-      - [Key Value Retrieval](#key-value-retrieval)
-    - [Fast, In-Object Properties](#fast-in-object-properties)
-      - [Assigning Properties inside Constructor Call](#assigning-properties-inside-constructor-call)
-      - [Assigning More Properties Later](#assigning-more-properties-later)
-      - [Assigning Same Properties in Different Order](#assigning-same-properties-in-different-order)
-    - [In-object Slack Tracking](#in-object-slack-tracking)
-    - [Methods And Prototypes](#methods-and-prototypes)
-      - [Assigning Functions to Properties](#assigning-functions-to-properties)
-      - [Assigning Functions to Prototypes](#assigning-functions-to-prototypes)
-    - [Numbered Properties](#numbered-properties)
-  - [Arrays](#arrays)
-    - [Fast Elements](#fast-elements)
-      - [Characteristics](#characteristics)
-    - [Dictionary Elements](#dictionary-elements)
-      - [Characteristics](#characteristics-1)
-    - [Double Array Unboxing](#double-array-unboxing)
-    - [Typed Arrays](#typed-arrays)
-      - [Float64Array](#float64array)
-    - [Considerations](#considerations-1)
-  - [Strings](#strings)
+- [Efficiently Representing Values and Tagging](#efficiently-representing-values-and-tagging)
+  - [Considerations](#considerations)
+- [Objects](#objects)
+  - [Structure](#structure)
+  - [Object Properties](#object-properties)
+  - [Hash Tables](#hash-tables)
+    - [HashTables and Hash Codes](#hashtables-and-hash-codes)
   - [Resources](#resources)
+  - [Fast, In-Object Properties](#fast-in-object-properties)
+    - [Assigning Properties inside Constructor Call](#assigning-properties-inside-constructor-call)
+    - [Assigning More Properties Later](#assigning-more-properties-later)
+    - [Assigning Same Properties in Different Order](#assigning-same-properties-in-different-order)
+  - [In-object Slack Tracking](#in-object-slack-tracking)
+  - [Methods And Prototypes](#methods-and-prototypes)
+    - [Assigning Functions to Properties](#assigning-functions-to-properties)
+    - [Assigning Functions to Prototypes](#assigning-functions-to-prototypes)
+  - [Numbered Properties](#numbered-properties)
+- [Arrays](#arrays)
+  - [Fast Elements](#fast-elements)
+  - [Dictionary Elements](#dictionary-elements)
+    - [Packed vs. Holey Elements](#packed-vs-holey-elements)
+    - [Elements Kinds](#elements-kinds)
+      - [Elements Kind Lattice](#elements-kind-lattice)
+  - [Double Array Unboxing](#double-array-unboxing)
+  - [Typed Arrays](#typed-arrays)
+    - [Float64Array](#float64array)
+  - [Considerations](#considerations-1)
+- [Strings](#strings)
+- [Resources](#resources-1)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
-# Data Types
 
 ## Efficiently Representing Values and Tagging
 
@@ -112,23 +115,34 @@ or
 - v8 hash tables are large arrays containing keys and values
 - initially all keys and values are `undefined`
 
-#### Key Value Insertion
+#### HashTables and Hash Codes
 
 - on *key-vaule pair* insertion the key's *hash code* is computed
-- low bits of *hash code* are used as initial insertion index
-- if that slot is taken the hash table attempts to insert it at next index (modulo length) and so on
-
-#### Key Value Retrieval
-
 - computing hash code and comparing keys for equality is commonly a fast operation
 - still slow to execute these non-trivial routines on every property read/write
-- v8 avoids hash table representation whenever possible
+- data structures such as Map, Set, WeakSet and WeakMap use hash tables under the hood
+- a _hash function_ returns a _hash code_ for given keys which is used to map them to a
+  location in the hash table
+- hash code is a random number (independent of object value) and thus needs to be stored
+- storing the hash code as private symbol on the object, like was done previously, resulted in
+  a variety of performance problems
+  - led to slow megamorphic IC lookups of the hash code and
+  - triggered hidden class transition in the key on storing the hash code
+- performance issues were fixed (~500% improvement for Maps and Sets) by _hiding_ the hashcode
+  and storing it in unused memory space that is _connected_ to the JSObject
+  - if properties backing store is empty: directly stored in the offset of JSObject
+  - if properties backing store is array: stored in extranous 21 bits of 31 bits to store array length
+  - if properties backing store is dictionary: increase dictionary size by 1 word to store hashcode
+    in dedicated slot at the beginning of the dictionary
+
+### Resources
+
+- [Optimizing hash tables: hiding the hash code - 2018](https://v8project.blogspot.com/2018/01/hash-code.html)
 
 ### Fast, In-Object Properties
 
 [read](http://jayconrod.com/posts/52/a-tour-of-v8-object-representation) *Fast, in-object properties* |
 [read](https://developers.google.com/v8/design#prop_access)
-
 
 - v8 describes the structure of objects using maps used to create *hidden classes* and match data types
   - resembles a table of descriptors with one entry for each property
@@ -145,21 +159,23 @@ or
 #### Assigning Properties inside Constructor Call
 
 ```js
-function Point () {
-  // Map M0
-  //  "x": Transition to M1 at offset 12
+class Point {
+  constructor(x, y) {
+    // Map M0
+    //  "x": Transition to M1 at offset 12
 
-  this.x = x;
+    this.x = x
 
-  // Map M1
-  //  "x": Field at offset 12
-  //  "y": Transition to M2 at offset 16
+    // Map M1
+    //  "x": Field at offset 12
+    //  "y": Transition to M2 at offset 16
 
-  this.y = y;
+    this.y = y
 
-  // Map M2
-  //  "x": Field at offset 12
-  //  "y": Field at offset 16
+    // Map M2
+    //  "x": Field at offset 12
+    //  "y": Field at offset 16
+  }
 }
 ```
 
@@ -170,14 +186,14 @@ function Point () {
 #### Assigning More Properties Later
 
 ```js
-var p = new Point();
+var p = new Point(1, 2)
 
 // Map M2
 //  "x": Field at offset 12
 //  "y": Field at offset 16
 //  "z": Transition at offset 20
 
-p.z = z;
+p.z = z
 
 // Map M3
 //  "x": Field at offset 12
@@ -193,37 +209,39 @@ p.z = z;
 #### Assigning Same Properties in Different Order
 
 ```js
-function Point(x, y, reverse) {
-  // Map M0
-  //  "x": Transition to M1 at offset 12ak
-  //  "y": Transition to M2 at offset 12
-  if (reverse) {
-    // variation 1
+class Point {
+  constructor(x, y, reverse) {
+    // Map M0
+    //  "x": Transition to M1 at offset 12ak
+    //  "y": Transition to M2 at offset 12
+    if (reverse) {
+      // variation 1
 
-    // Map M1
-    //  "x": Field at offset 12
-    //  "y": Transition to M4 at offset 16
+      // Map M1
+      //  "x": Field at offset 12
+      //  "y": Transition to M4 at offset 16
 
-    this.x = x;
+      this.x = x
 
-    // Map M4
-    //  "x": Field at offset 12
-    //  "y": Field at offset 16
+      // Map M4
+      //  "x": Field at offset 12
+      //  "y": Field at offset 16
 
-    this.y = y;
-  } else {
-    // variation 2
+      this.y = y
+    } else {
+      // variation 2
 
-    // Map M2
-    //  "y": Field at offset 12
-    //  "x": Transition to M5 at offset 16
+      // Map M2
+      //  "y": Field at offset 12
+      //  "x": Transition to M5 at offset 16
 
-    this.y = x;
+      this.y = x
 
-    // Map M5
-    //  "y": Field at offset 12
-    //  "x": Field at offset 16
-    this.x = y;
+      // Map M5
+      //  "y": Field at offset 12
+      //  "x": Field at offset 16
+      this.x = y
+    }
   }
 }
 ```
@@ -251,32 +269,34 @@ function Point(x, y, reverse) {
 #### Assigning Functions to Properties
 
 ```js
-function Point () {
-  // Map M0
-  //  "x": Transition to M1 at offset 12
-
-  this.x = x;
-
-  // Map M1
-  //  "x": Field at offset 12
-  //  "y": Transition to M2 at offset 16
-
-  this.y = y;
-
-  // Map M2
-  //  "x": Field at offset 12
-  //  "y": Field at offset 16
-  // "distance": Transition to M3 <pointDistance>
-
-  this.distance = pointDistance;
-
-  // Map M3
-  //  "x": Field at offset 12
-  //  "y": Field at offset 16
-  // "distance": Constant_Function <pointDistance>
-}
-
 function pointDistance(p) { /* calculates distance */ }
+
+class Point {
+  constructor(x, y) {
+    // Map M0
+    //  "x": Transition to M1 at offset 12
+
+    this.x = x
+
+    // Map M1
+    //  "x": Field at offset 12
+    //  "y": Transition to M2 at offset 16
+
+    this.y = y
+
+    // Map M2
+    //  "x": Field at offset 12
+    //  "y": Field at offset 16
+    // "distance": Transition to M3 <pointDistance>
+
+    this.distance = pointDistance
+
+    // Map M3
+    //  "x": Field at offset 12
+    //  "y": Field at offset 16
+    // "distance": Constant_Function <pointDistance>
+  }
+}
 ```
 
 - properties pointing to `Function`s are handled via `constant functions` descriptor
@@ -288,15 +308,17 @@ function pointDistance(p) { /* calculates distance */ }
 #### Assigning Functions to Prototypes
 
 ```js
-function Point(x, y) {
-  this.x = x;
-  this.y = y;
-}
+class Point {
+  constructor(x, y) {
+    this.x = x
+    this.y = y
+  }
 
-Point.prototype.pointDistance = function () { /* calculates distance */ }
+  pointDistance() { /* calculates distance */ }
+}
 ```
 
-- v8 represents prototype methods using `constant_function` descriptors
+- v8 represents prototype methods (aka _class methods_) using `constant_function` descriptors
 - calling prototype methods maybe a **tiny** bit slower due to overhead of the following:
   - check *receiver's* map (as with *own* properties)
   - check maps of *prototype chain* (extra step)
@@ -321,7 +343,9 @@ Point.prototype.pointDistance = function () { /* calculates distance */ }
 
 [read](http://jayconrod.com/posts/52/a-tour-of-v8-object-representation) *Numbered properties: fast elements*
 
-- v8 has two methods for storing arrays, *fast elements* and *dictionary elements* 
+[read](https://v8project.blogspot.com/2017/08/fast-properties.html)
+
+- v8 has two methods for storing arrays, *fast elements* and *dictionary elements*
 
 ### Fast Elements
 
@@ -329,28 +353,49 @@ Point.prototype.pointDistance = function () { /* calculates distance */ }
 
 - compact keysets
 - linear storage buffer
+- contiguous (non-sparse)
+- `0` based
+- smaller than 64K
+
+### Dictionary Elements
+
+- hash table storage
+- slow access
+- sparse
+- large
+
+#### Packed vs. Holey Elements
+
+- v8 makes distinction whether the elements backing store is packed or has holes
+- holes in a backing store are created by deleting an indexed element
+- missing properties are marked with special _hole_ value to keep Array functions performant
+- however missing properties cause expensive lookups on prototype chain
+
+#### Elements Kinds
+
+[read](https://v8project.blogspot.com/2017/09/elements-kinds-in-v8.html)
+
 - fast *elements kinds* in order of increasing generality:
   - fast SMIs (small integers)
   - fast doubles (Doubles stored in unboxed representation)
   - fast values (strings or other objects)
 
-#### Characteristics
+##### Elements Kind Lattice
 
-- contiguous (non-sparse)
-- `0` based
-- smaller than `100K` elements [see this test](https://github.com/thlorenz/v8-perf/blob/master/test/fast-elements.js)
-
-### Dictionary Elements
-
-[see Hash Tables](#hash-tables)
-
-- hash table storage
-- slow access
-
-#### Characteristics
-
-- sparse
-- large
+```
++--------------------+
+| PACKED_SMI_ELEMENT |---+
++--------------------+   |    +------------------------+
+          |              +--->| PACKED_DOUBLE_ELEMENTS |---+
+          ↓                   +------------------------+   |    +-------------------+
++--------------------+                   |                 +--->|  PACKED_ELEMENTS  |
+| HOLEY_SMI_ELEMENTS |---+               ↓                      +-------------------+
++--------------------+   |    +------------------------+                   |
+                         +--->|  HOLEY_DOUBLE_ELEMENTS |---+               ↓
+                              +------------------------+   |    +-------------------+
+                                                           +--->|  HOLEY_ELEMENTS   |
+                                                                +-------------------+
+```
 
 ### Double Array Unboxing
 
@@ -382,16 +427,21 @@ Point.prototype.pointDistance = function () { /* calculates distance */ }
 
 ### Considerations
 
-- don't pre-allocate large arrays (`>=100K` elements), instead grow as needed, to avoid them being considered sparse
+- once array is marked as holey it is holey forever
+- don't pre-allocate large arrays (`>64K`), instead grow as needed, to avoid them being considered sparse
 - do pre-allocate small arrays to correct size to avoid allocations due to resizing
-- don't delete elements
+- avoid creating holes, and thus don't delete elements
 - don't load uninitialized or deleted elements [watch](http://youtu.be/UJPdhx5zTaw?t=19m30s) |
   [slide](http://v8-io12.appspot.com/index.html#43)
 - use literal initializer for Arrays with mixed values
-- don't store non-numeric valuse in numeric arrays
+- don't store non-numeric values in numeric arrays
   - causes boxing and efficient code that was generated for manipulating values can no longer be used
-- use typed arrays whenever possible
-- copying an array, you should avoid copying from the back (higher indices to lower indices) because this will almost certainly trigger dictionary mode
+- use typed arrays whenever possible especially when performing mathematical operations on an
+  array of numbers
+- when copying an array, you should avoid copying from the back (higher indices to lower
+  indices) because this will almost certainly trigger dictionary mode
+- avoid elements kind transitions, i.e. edge case of adding `-0, NaN, Infinity` to a SMI array
+  as they are represented as doubles
 
 ## Strings
 
@@ -413,3 +463,6 @@ map |len |hash|characters
 - [tour of v8: garbage collection - 2013](http://jayconrod.com/posts/55/a-tour-of-v8-garbage-collection)
 - [tour of v8: object representation - 2013](http://jayconrod.com/posts/52/a-tour-of-v8-object-representation)
 - [v8-design](https://developers.google.com/v8/design#garb_coll)
+- [Fast Properties in V8 - 2017](https://v8project.blogspot.com/2017/08/fast-properties.html)
+- [“Elements kinds” in V8 - 2017](https://v8project.blogspot.com/2017/09/elements-kinds-in-v8.html)
+- [video: V8 internals for JavaScript developers - 2018](https://www.youtube.com/watch?v=m9cTaYI95Zc)

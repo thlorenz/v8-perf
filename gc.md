@@ -1,54 +1,67 @@
+# v8 Garbage Collector
+
+_find the previous version of this document at
+[crankshaft/gc.md](crankshaft/gc.md)_
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of Contents**  *generated with [DocToc](http://doctoc.herokuapp.com/)*
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
-- [v8 Garbage Collector](#v8-garbage-collector)
-  - [Goals, Techniques](#goals-techniques)
-  - [Cost of Allocating Memory](#cost-of-allocating-memory)
-  - [How objects are determined to be dead](#how-objects-are-determined-to-be-dead)
-  - [Two Generations](#two-generations)
-  - [Heap Organization in Detail](#heap-organization-in-detail)
-    - [New Space](#new-space)
-    - [Old Pointer Space](#old-pointer-space)
-    - [Old Data Space](#old-data-space)
-    - [Large Object Space](#large-object-space)
-    - [Code Space](#code-space)
-    - [Cell Space, Property Cell Space, Map Space](#cell-space-property-cell-space-map-space)
-    - [Pages](#pages)
-  - [Young Generation](#young-generation)
-    - [ToSpace, FromSpace, Memory Exhaustion](#tospace-fromspace-memory-exhaustion)
-      - [Sample Scavenge Scenario](#sample-scavenge-scenario)
-        - [Collection to free ToSpace](#collection-to-free-tospace)
-      - [Write Barriers](#write-barriers)
-        - [Write Barrier Crankshaft Optimizations](#write-barrier-crankshaft-optimizations)
-      - [Considerations](#considerations)
-  - [Old Generation](#old-generation)
-    - [Collection Steps](#collection-steps)
-    - [Mark Sweep and Mark Compact](#mark-sweep-and-mark-compact)
-      - [Mark](#mark)
-      - [Marking State](#marking-state)
-        - [Depth-First Search](#depth-first-search)
-      - [Handling Deque Overflow](#handling-deque-overflow)
-      - [Sweep and Compact](#sweep-and-compact)
-      - [Sweep](#sweep)
-      - [Compact](#compact)
-    - [Incremental Mark and Lazy Sweep](#incremental-mark-and-lazy-sweep)
-      - [Incremental Marking](#incremental-marking)
-      - [Lazy Sweeping](#lazy-sweeping)
-  - [Causes For GC Pause](#causes-for-gc-pause)
+- [Goals, Techniques](#goals-techniques)
+- [Cost of Allocating Memory](#cost-of-allocating-memory)
+- [How objects are determined to be dead](#how-objects-are-determined-to-be-dead)
+- [Two Generations](#two-generations)
+  - [Generational Garbage Collector](#generational-garbage-collector)
+- [Heap Organization in Detail](#heap-organization-in-detail)
+  - [New Space aka Young Generation](#new-space-aka-young-generation)
+  - [Old Pointer Space](#old-pointer-space)
+  - [Old Data Space](#old-data-space)
+  - [Large Object Space](#large-object-space)
+  - [Code Space](#code-space)
+  - [Cell Space, Property Cell Space, Map Space](#cell-space-property-cell-space-map-space)
+  - [Pages](#pages)
+- [Young Generation](#young-generation)
+  - [ToSpace, FromSpace, Memory Exhaustion](#tospace-fromspace-memory-exhaustion)
+    - [Sample Scavenge Scenario](#sample-scavenge-scenario)
+      - [Collection to free ToSpace](#collection-to-free-tospace)
+    - [Considerations](#considerations)
+- [Orinoco Garbage Collector](#orinoco-garbage-collector)
+  - [Parallel Scavenger](#parallel-scavenger)
+    - [Scavenger Phases](#scavenger-phases)
+      - [Distribution of scavenger work across one main thread and two worker threads](#distribution-of-scavenger-work-across-one-main-thread-and-two-worker-threads)
+    - [Results](#results)
+  - [Techniques to Improve GC Performance](#techniques-to-improve-gc-performance)
+    - [Memory Partition and Parallelization](#memory-partition-and-parallelization)
+    - [Tracking Pointers](#tracking-pointers)
+    - [Black Allocation](#black-allocation)
   - [Resources](#resources)
+- [Old Generation Garbage Collector Deep Dive](#old-generation-garbage-collector-deep-dive)
+  - [Collection Steps](#collection-steps)
+  - [Mark Sweep and Mark Compact](#mark-sweep-and-mark-compact)
+    - [Mark](#mark)
+    - [Marking State](#marking-state)
+      - [Depth-First Search](#depth-first-search)
+    - [Handling Deque Overflow](#handling-deque-overflow)
+    - [Sweep and Compact](#sweep-and-compact)
+    - [Sweep](#sweep)
+    - [Compact](#compact)
+  - [Incremental Mark and Lazy Sweep](#incremental-mark-and-lazy-sweep)
+    - [Incremental Marking](#incremental-marking)
+    - [Lazy Sweeping](#lazy-sweeping)
+- [Resources](#resources-1)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
-# v8 Garbage Collector
 
 ## Goals, Techniques
 
 - ensures fast object allocation, short garbage collection pauses and no memory fragmentation
 - **stop-the-world**,
   [generational](http://www.memorymanagement.org/glossary/g.html#term-generational-garbage-collection) accurate garbage collector
-- stops program execution when performing garbage collections cycle
-- processes only part of the object heap in most garbage collection cycles to minimize impact of above
+- stops program execution when performing steps of garbage collections cycle that can only run
+  synchronously
+- many steps are performed in parallel, see [Orinoco Garbage
+  Collector](#orinoco-garbage-collector) and only part of the object heap is processed in most
+  garbage collection cycles to minimize impact on main thread execution
 - wraps objects in `Handle`s in order to track objects in memory even if they get moved (i.e. due to being promoted)
 - identifies dead sections of memory
 - GC can quickly scan [tagged words](data-types.md#efficiently-representing-values-and-tagging)
@@ -59,7 +72,7 @@
 [watch](http://youtu.be/VhpdsjBUS3g?t=10m54s)
 
 - cheap to allocate memory
-- expensive to collect when memory pool is exausted
+- expensive to collect when memory pool is exhausted
 
 ## How objects are determined to be dead
 
@@ -72,7 +85,7 @@ everything else is garbage*
 - objects pointed to by local variables are roots (stack is scanned for roots)
 - DOM elements are roots (may be weakly referenced)
 
-## Two Generations 
+## Two Generations
 
 [watch](http://youtu.be/VhpdsjBUS3g?t=11m24s)
 
@@ -80,9 +93,29 @@ everything else is garbage*
 - **New Space** in which objects aka **Young Generation** are created
 - **Old Space** into which objects that survived a GC cycle aka **Old Generation** are promoted
 
+### Generational Garbage Collector
+
+- two garbage collectors are implemented, each focusing on _young_ and _old_ generation
+  respectively
+- young generation evacuation ([more details](#tospace-fromspace-memory-exhaustion))
+  - objects initially allocated in _nursery_  of the _young generation_
+  - objects surviving one GC are copied into _intermediate_ space of the _young generation_
+  - objects surviving two GCs are moved into _old generation_
+
+```
+        young generation         |   old generation
+                                 |
+  nursery     |  intermediate    |
+              |                  |
+ +--------+   |     +--------+   |     +--------+
+ | object |---GC--->| object |---GC--->| object |
+ +--------+   |     +--------+   |     +--------+
+              |                  |
+```
+
 ## Heap Organization in Detail
 
-### New Space
+### New Space aka Young Generation
 
 - most objects allocated here
   - executable `Codes` are always allocated in Old Space
@@ -95,8 +128,8 @@ everything else is garbage*
 ### Old Pointer Space
 
 - contains objects that may have pointers to other objects
-- objects surviving **New Space** long enough are moved here
-  
+- objects surviving two collections while in **New Space** are moved here
+
 ### Old Data Space
 
 - contains *raw data* objects -- **no pointers**
@@ -125,16 +158,15 @@ everything else is garbage*
 
 - each space divided into set of pages
 - page is **contiguous** chunk of memory allocated via `mmap`
-- page is 1MB in size and 1MB aligned 
+- page is 1MB in size and 1MB aligned
   - exception **Large Object Space** where page can be larger
-- page contains header 
+- page contains header
   - flags and meta-data
   - marking bitmap to indicate which objects are alive
 - page has slots buffer
   - allocated in separate memory
   - forms list of objects which may point to objects stored on the page aka [*remembered
     set*](http://www.memorymanagement.org/glossary/r.html#remembered.set)
-
 
 ## Young Generation
 
@@ -144,10 +176,12 @@ everything else is garbage*
 - fast collection performed frequently via [stop and
   copy](http://www.memorymanagement.org/glossary/s.html#term-stop-and-copy-collection) - [two-space
   collector](http://www.memorymanagement.org/glossary/t.html#term-two-space-collector)
+- however some copy operations can run in parallel due to techniques like page isolation, see
+  [Orinoco Garbage Collector](#orinoco-garbage-collector)
 
 ### ToSpace, FromSpace, Memory Exhaustion
 
-[watch](http://youtu.be/VhpdsjBUS3g?t=13m40s)
+[watch](http://youtu.be/VhpdsjBUS3g?t=13m40s) | [code](https://cs.chromium.org/chromium/src/v8/src/heap/spaces.h)
 
 - ToSpace is used to allocate values i.e. `new`
 - FromSpace is used by GC when collection is triggered
@@ -156,8 +190,10 @@ everything else is garbage*
 - when **New Space** allocation pointer reaches end of **New Space** v8 triggers minor garbage collection cycle
   called **scavenge** or [copying garbage
   collection](http://www.memorymanagement.org/glossary/c.html#term-copying-garbage-collection)
-- scavenge implements [Cheney's algorithm](http://en.wikipedia.org/wiki/Cheney's_algorithm)
-- [more details](http://jayconrod.com/posts/55/a-tour-of-v8-garbage-collection) *Generational collection* section
+- scavenge algorithm similar to the [Halstead semispace copying collector](https://www.cs.cmu.edu/~guyb/papers/gc2001.pdf)
+  to support parallel processing
+  - in the past scavenge used to implement [Cheney's algorithm](http://en.wikipedia.org/wiki/Cheney's_algorithm) which is synchronous
+  - [more details](http://jayconrod.com/posts/55/a-tour-of-v8-garbage-collection) *Generational collection* section
 
 #### Sample Scavenge Scenario
 
@@ -170,7 +206,7 @@ ToSpace starts as unallocated memory.
 ```
 
 - alloc E (not enough space - exhausted **Young Generation** memory)
-- triggers collection which blocks the main thread
+- triggers collection which partially blocks the main thread
 
 ##### Collection to free ToSpace
 
@@ -179,8 +215,9 @@ ToSpace starts as unallocated memory.
 - objects on FromSpace are determined to be live or dead
 - dead ones are collected
 - live ones are marked and copied (expensive) out of From Space and either
-  - moved to ToSpace and compacted in the process to improve cache locality
-  - promoted to Old Space
+  - moved to ToSpace, compacted in the process to improve cache locality and considered
+  _intermediates_ since they survived one GC
+  - promoted to OldSpace if they were considered _intermediates_
 - assuming B and D were dead
 
 ```
@@ -189,48 +226,128 @@ ToSpace starts as unallocated memory.
 
 - now we can allocate E
 
-#### Write Barriers
-
-[read](http://jayconrod.com/posts/55/a-tour-of-v8-garbage-collection) *Write barriers: the secret ingredient*
-
-[barrier](http://www.memorymanagement.org/glossary/b.html#term-barrier-1) | [write
-barrier](http://www.memorymanagement.org/glossary/w.html#term-write-barrier) | [read
-barrier](http://www.memorymanagement.org/glossary/r.html#term-read-barrier)
-
-**Problem**: how does GC know an object in **New Space** is alive if it is only pointed to from an object in **Old Space** without
-scanning **Old Space** all the time?
-
-- *store buffer* maintains list of pointers from **Old Space** to **New Space**
-- on new allocation of object, no other object points to it
-- when pointer of object in **New Space** is written to field of object in **Old Space**, record location of that field in store
-  buffer
-- above is archieved via a *write barrier* which is a bit of code that detects and records these pointers
-- *write barriers* are expensive, but don't act as often (writes are less frequent than reads)
-
-##### Write Barrier Crankshaft Optimizations
-
-- most execution time spent in optimized code
-- crankshaft may statically prove object is in New Space and thus write barriers can be omitted for them
-- crankshaft allocates objects on stack when only local references to them exist -> no write barriers for stack
-- `old->new` pointers are rare, so optimizing for detecting `new->new` and `old->old` pointers quickly
-  - since pages are aligned on 1 MB boundary object's page is found quickly by masking off the low 20 bits of its address
-  - page headers have flags indicating which space they are in
-  - above allows checking which space object is in with a few instructions
-- once `old->new` pointer is found, record location of it at end of store buffer
-  - *store buffer* entries are sorted and deduped periodically and entries no longer pointing to **New Space** are removed
-
 #### Considerations
 
 [watch](http://youtu.be/VhpdsjBUS3g?t=15m30s)
 
 - every allocation brings us closer to GC pause
-- **collection pauses our app**
+- even though as many steps of collection are performed in parallel, **every collection pauses our
+  app**
 - try to pre-alloc as much as possible ahead of time
 
-## Old Generation
+## Orinoco Garbage Collector
+
+[watch orinoco overview]([watch](https://youtu.be/EdFDJANJJLs?t=15m10s)) | [jank and concurrent GC](https://youtu.be/HDuSEbLWyOY?t=5m14s) |
+[read](https://v8project.blogspot.com/2016/04/jank-busters-part-two-orinoco.html)
+
+The Orinioco garbage collector was created in an attempt to lessen the time that our
+application stops due to garbage collection by performing as many steps as possible in
+parallel.
+
+Numerous techniques like smart paging and use of concurrency friendly algorithms have been used
+to both partially parallelize the Old Generation and Young Generation garbage collectors.
+
+- mostly parallel and concurrent garbage collector without _strict_ generational boundaries
+- most parts of GC taken off the main thread (56% less GC on main thread)
+- optimized weak global handles
+- unified heap for full garbage collection
+- optimized v8's black allocation additions
+- reduced peak memory consumption of on-heap peak memory by up to 40% and off-heap peak memory
+  by 20% for low-memory devices by tuning several GC heuristics
+
+### Parallel Scavenger
+
+[read](https://v8project.blogspot.com/2017/11/orinoco-parallel-scavenger.html)
+
+- introduced with v8 v6.2 which is part of Node.js v8
+- older v8 versions used Cheney semispace copying garbage collector that divides young
+  generation in two equal halves and [performed moving/copying of objects that survived GC
+  synchronously](crankshaft/gc.md#tospace-fromspace-memory-exhaustion)
+  - single threaded scavenger made sense on single-core environments, but at this point Chrome,
+    Node.js and thus v8 runs in many multicore scenarios
+- new algorithm similar to the [Halstead semispace copying collector](https://www.cs.cmu.edu/~guyb/papers/gc2001.pdf)
+  except that v8 uses dynamic instead of static _work stealing_ across multiple threads
+
+#### Scavenger Phases
+
+As with the previous algorithm scavenge happens in four phases.
+All phases are performed in parallel and interleaved on each task, thus maximizing utilization
+of worker tasks.
+
+1. scan for roots
+    - majority of root set are the references from the old generation to the young generation
+    - [remembered sets](#tracking-pointers) are maintained per page and thus naturally distributes
+      the root sets among garbage collection threads
+2. copy objects within the young generation
+3. promote objects to the old generation
+    - objects are processed in parallel
+    - newly found objects are added to a global work list from which garbage collection threads can
+      _steal_
+4. update pointers
+
+##### Distribution of scavenger work across one main thread and two worker threads
+
+![parallel scavenger](https://1.bp.blogspot.com/-fqUIuq6zXEg/Wh2T1lAM5nI/AAAAAAAAA8M/g183HuHqOis6kENwJGt9ctloHEaXEQlagCLcBGAs/s1600/image4.png)
+![threads](https://3.bp.blogspot.com/-IQcY0MHevKs/Wh2T08XW7wI/AAAAAAAAA8I/EluBNmwT2XIPZNkznSRUml6AmOJWZiJwQCLcBGAs/s1600/image3.png)
+
+
+#### Results
+
+- just a little slower than the optimized Cheney algorithm on very small heaps
+- provides high throughput when heap gets larger with lots of life objects
+- time spent on main thread by the scavenger was reduced by 20%-50%
+
+### Techniques to Improve GC Performance
+
+#### Memory Partition and Parallelization
+
+- heap memory is partitioned into fixed-size chunks, called _pages_
+- _young generation evacuation_ is achieved in parallel by copying memory based on pages
+- _memory compaction_ parallelized on page-level
+- young generation and old generation compaction phases don't depend on each other and thus are
+  parallelized
+- resulted in 75% reduction of compaction time
+
+#### Tracking Pointers
+
+[read](https://v8project.blogspot.com/2016/04/jank-busters-part-two-orinoco.html)
+
+- GC tracks pointers to objects which have to be updated whenever an object is moved
+- all pointers to old location need to be updated to object's new location
+- v8 uses a _rembered set_ of _interesting pointers_ on the heap
+- an object is _interesting_ if it may move during garbage collection or if it lives in heavily
+  fragmented pages and thus will be moved during compaction
+- _remembered sets_ are organized to simplify parallelization and ensure that threads get
+  disjoint sets of pointers to update
+- each page stores offsets to _interesting_ pointers originating from that page
+
+#### Black Allocation
+
+[read](https://v8project.blogspot.com/2016/04/jank-busters-part-two-orinoco.html)
+
+- assumption: objects recently allocated in the old generation should at least survive the next
+  old generation garbage collection and thus are _colored_ black
+- _black objects_ are allocated on black pages which aren't swept
+- speeds up incremental marking process and results in less garbage collection
+
+### Resources
+
+- [Getting Garbage Collection for Free](https://v8project.blogspot.com/2015/08/getting-garbage-collection-for-free.html)
+  _maybe outdated except the scheduling part at the beginning_?
+- [Jank Busters Part One](https://v8project.blogspot.com/2015/10/jank-busters-part-one.html)
+  _outdated_?
+- [Jank Busters Part Two: Orinoco](https://v8project.blogspot.com/2016/04/jank-busters-part-two-orinoco.html)
+  _outdated_ except for paging, pointer tracking and black allocation?
+- [V8 Release 5.3](https://v8project.blogspot.com/2016/07/v8-release-53.html)
+- [V8 Release 5.4](https://v8project.blogspot.com/2016/09/v8-release-54.html)
+- [Optimizing V8 memory consumption](https://v8project.blogspot.com/2016/10/fall-cleaning-optimizing-v8-memory.html)
+- [Orinoco: young generation garbage collection](https://v8project.blogspot.com/2017/11/orinoco-parallel-scavenger.html)
+
+## Old Generation Garbage Collector Deep Dive
 
 - fast alloc
-- slow collection performed infrequently
+- slow collection performed infrequently and thus in most cases doesn't affect application
+  performance as much as the more frequently performed _scavenge_
 - `~20%` of objects survive into **Old Generation**
 
 ### Collection Steps
@@ -248,7 +365,7 @@ scanning **Old Space** all the time?
 
 - used to collect **Old Space** which may contain +100 MB of data
 - scavenge impractical for more than a few MBs
-- two phases 
+- two phases
   - Mark
   - Sweep or Compact
 
@@ -273,7 +390,7 @@ scanning **Old Space** all the time?
 
 - starts with clear marking bitmap and all *white* objects
 - objects reachable from roots become *grey* and pushed onto *marking deque*
-- at each step GC pops object from *marking deque*, marks it *black* 
+- at each step GC pops object from *marking deque*, marks it *black*
 - then marks it's neighboring *white* objects *grey* and pushes them onto *marking deque*
 - exit condition: *marking deque* is empty and all discovered objects are *black*
 
@@ -299,7 +416,7 @@ scanning **Old Space** all the time?
   - for medium regions `< 2048 words`
   - for large regions `< 16384 words`
   - used by scavenge algorithm for promoting surviving objects to **Old Space**
-  - used by compacting algorithm to relocate objects 
+  - used by compacting algorithm to relocate objects
 
 #### Compact
 
@@ -325,26 +442,12 @@ last paragraph
 
 - occurs after each incremental marking
 - at this point heap knows exactly how much memory could be freed
-- may be ok to delay sweeping, so actual page sweeps happen on *as-needed* basis 
+- may be ok to delay sweeping, so actual page sweeps happen on *as-needed* basis
 - GC cycle is complete when all pages have been swept at which point incremental marking starts again
-
-## Causes For GC Pause
-
-[watch](http://youtu.be/VhpdsjBUS3g?t=16m30s)
-
-- calling `new` a lot and keeping references to created objects for longer than necessary
-  - client side **never `new` within a frame**
-
-[watch](http://youtu.be/VhpdsjBUS3g?t=17m15s)
-
-- running unoptimized code
-  - causes memory allocation for implicit/immediate results of calculations even when not assigned
-  - if it was optimized, only for final results gets memory allocated (intermediates stay in registers? -- todo confirm)
 
 ## Resources
 
-- [video: accelerating oz with v8](https://www.youtube.com/watch?v=VhpdsjBUS3g) |
-  [slides](http://commondatastorage.googleapis.com/io-2013/presentations/223.pdf)
-- [v8-design](https://developers.google.com/v8/design#garb_coll)
+- [video: accelerating oz with v8](https://www.youtube.com/watch?v=VhpdsjBUS3g)
+- [v8-design](https://github.com/v8/v8/wiki/Design%20Elements#efficient-garbage-collection)
 - [tour of v8: garbage collection - 2013](http://jayconrod.com/posts/55/a-tour-of-v8-garbage-collection)
 - [memory management reference](http://www.memorymanagement.org/)

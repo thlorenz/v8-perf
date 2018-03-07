@@ -1,6 +1,11 @@
+# Memory Profiling
+
+_find the previous version of this document at
+[crankshaft/memory-profiling.md](crankshaft/memory-profiling.md)_
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of Contents**  *generated with [DocToc](http://doctoc.herokuapp.com/)*
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
 - [Theory](#theory)
   - [Objects](#objects)
@@ -13,27 +18,27 @@
   - [Dominators](#dominators)
   - [Causes for Leaks](#causes-for-leaks)
 - [Tools](#tools)
-  - [DevTools Timeline](#devtools-timeline)
-      - [Drilling into Events](#drilling-into-events)
-  - [DevTools Heap Profiler](#devtools-heap-profiler)
-    - [Collecting a HeapDump for a Node.js app](#collecting-a-heapdump-for-a-nodejs-app)
-      - [Ensuring GC](#ensuring-gc)
-    - [Considerations to make code easier to debug](#considerations-to-make-code-easier-to-debug)
-        - [Name your function declarations](#name-your-function-declarations)
+  - [DevTools Allocation Timeline](#devtools-allocation-timeline)
+    - [Allocation Stack](#allocation-stack)
+    - [Recording Allocation Timeline with Node.js](#recording-allocation-timeline-with-nodejs)
+  - [DevTools Allocation Profile](#devtools-allocation-profile)
+    - [Recording Allocation Profile with Node.js](#recording-allocation-profile-with-nodejs)
+  - [DevTools Heap Snapshots](#devtools-heap-snapshots)
+    - [Taking Heap Snapshot with Node.js](#taking-heap-snapshot-with-nodejs)
     - [Views](#views)
       - [Color Coding](#color-coding)
       - [Summary View](#summary-view)
         - [Limiting included Objects](#limiting-included-objects)
       - [Comparison View](#comparison-view)
-        - [Advanced Comparison Technique](#advanced-comparison-technique)
-      - [Object Allocation Tracker](#object-allocation-tracker)
-        - [Allocation Stack](#allocation-stack)
       - [Containment View](#containment-view)
         - [Entry Points](#entry-points)
       - [Dominators View](#dominators-view)
       - [Retainer View](#retainer-view)
     - [Constructors listed in Views](#constructors-listed-in-views)
       - [Closures](#closures)
+        - [Advanced Comparison Technique](#advanced-comparison-technique)
+    - [Dynamic Heap Limit and Large HeapSnapshots](#dynamic-heap-limit-and-large-heapsnapshots)
+- [Considerations to make code easier to debug](#considerations-to-make-code-easier-to-debug)
 - [Resources](#resources)
   - [blogs/tutorials](#blogstutorials)
   - [videos](#videos)
@@ -46,14 +51,18 @@
 ### Objects
 
 [read](https://developer.chrome.com/devtools/docs/javascript-memory-profiling#object-sizes)
-[read](https://developer.chrome.com/devtools/docs/memory-analysis-101#object_sizes)
+[read](https://developers.google.com/web/tools/chrome-devtools/memory-problems/memory-101#object_sizes)
 
 #### Shallow size
+
+[read](https://developers.google.com/web/tools/chrome-devtools/memory-problems/memory-101#shallow_size)
 
 - memory held by object **itself**
 - arrays and strings may have significant shallow size
 
 #### Retained size
+
+[read](https://developers.google.com/web/tools/chrome-devtools/memory-problems/memory-101#retained_size)
 
 - memory that is freed once object itself is deleted due to it becoming unreachable from *GC roots*
 - held by object *implicitly*
@@ -66,8 +75,7 @@
 
 #### Storage
 
-[read](https://developer.chrome.com/devtools/docs/javascript-memory-profiling#javascript-object-representation)
-
+[read](https://developers.google.com/web/tools/chrome-devtools/memory-problems/memory-101#javascript_object_representation) |
 [read](https://github.com/thlorenz/v8-perf/blob/master/data-types.md)
 
 - primitives are leafs or terminating nodes
@@ -82,7 +90,7 @@
 
 #### Object Groups
 
-[read](https://developer.chrome.com/devtools/docs/javascript-memory-profiling#object-groups)
+[read](https://developers.google.com/web/tools/chrome-devtools/memory-problems/memory-101#object_groups)
 
 - *native objects* group is made up from objects holding mutual references to each other
 - not represented in JS heap -> have zero size
@@ -93,7 +101,7 @@
 
 ### Retainers
 
-[read](https://developer.chrome.com/devtools/docs/javascript-memory-profiling#objects-retaining-tree)
+[read](https://developers.google.com/web/tools/chrome-devtools/memory-problems/memory-101#objects_retaining_tree) |
 [read](https://developer.chrome.com/devtools/docs/memory-analysis-101#retaining_paths)
 
 - shown at the  bottom inside heap snapshots UI
@@ -104,8 +112,8 @@
 
 ### Dominators
 
-[read](https://developer.chrome.com/devtools/docs/javascript-memory-profiling#dominators)
-[read](https://en.wikipedia.org/wiki/Dominator_(graph_theory))
+[read](https://developers.google.com/web/tools/chrome-devtools/memory-problems/memory-101#dominators) |
+[read](https://en.wikipedia.org/wiki/Dominator_(graph_theory)) |
 [read](https://developer.chrome.com/devtools/docs/memory-analysis-101#dominators)
 
 - can be seen in [**Dominators** view](#dominators-view)
@@ -123,113 +131,99 @@
 
 ## Tools
 
-### DevTools Timeline
+### DevTools Allocation Timeline
 
-[read](https://developer.chrome.com/devtools/docs/javascript-memory-profiling#identifying-a-memory-problem-with-the-devtools-timeline)
+[watch](http://youtu.be/LaxbdIyBkL0?t=50m33s) |
+[read](https://developers.google.com/web/tools/chrome-devtools/memory-problems/allocation-profiler)
+(slightly out of date especially WRT naming, but does show the allocation timeline profiler) |
+[read](https://developers.google.com/web/tools/chrome-devtools/memory-problems/#identify_js_heap_memory_leaks_with_allocation_timelines)
 
-- not available to use with Node.js ATM
+- **preferred over snapshot comparisons** to track down memory leaks
+- *blue* bars show memory allocations
+- *grey* bars show memory deallocations
 
-![memory-timeline](https://github.com/thlorenz/v8-perf/blob/master/assets/devtools-memory-timeline.png)
+#### Allocation Stack
 
-- memory usage overview over time
-- can be used to identify memory leaks and/or performance bottlenecks caused by a *busy* garbage collector
-- top band shows events over time that caused memory usage to be affected
-- **Records** shows these events in detail and allows drilling into them to see a stack trace
-  - GC events are included as well (not shown in the picture)
-- **Memory** shows memory usages colored coded
-- **Details** (on the right) shows how long each event or each separate function call took
+[slides](https://speakerdeck.com/addyosmani/javascript-memory-management-masterclass?slide=102)
+[watch](http://youtu.be/LaxbdIyBkL0?t=51m30s)
 
-##### Drilling into Events
+![allocation-stack](assets/memory-allocation-stack.png)
 
-![memory-timeline-interaction](https://github.com/thlorenz/v8-perf/blob/master/assets/devtools-memory-timeline-01.gif)
+- _Allocation_ view (selectable in top left) shows allocations grouped by function and whose
+  traces can be followed to see the function code responsible for the allocation
 
-### DevTools Heap Profiler
+#### Recording Allocation Timeline with Node.js
 
-![memory-heapsnapshot](https://github.com/thlorenz/v8-perf/blob/master/assets/devtools-heapsnapshot.png)
+- run app via `node --inspect` or `node --inspect-brk`
+- open DevTools anywhere and click on the Node.js icon in the upper left corner to open a
+  dedicated Node.js DevTools instance
+- select the _Memory_ tab and there select _Record allocation timeline_ and then click _Start_
+  - if you launched with `--inspect-brk` go back to the source panel to start debugging and
+    then return to _Memory_ tab
+- stop profiling via the red circle on the upper left and examine the timeline and related
+  snapshots
+- notice that the dropdown on the upper left has an _Allocations_ option which allows you to
+  inspect allocations by function
 
-[read](https://developer.chrome.com/devtools/docs/javascript-memory-profiling#heap-profiler)
+![memory-hog-allocation-timeline](assets/memory-allocation-timeline.gif)
 
-#### Collecting a HeapDump for a Node.js app
+### DevTools Allocation Profile
 
-- the [heapdump](https://github.com/bnoordhuis/node-heapdump) module supports Node.js `v0.6-v0.10`
-- `require('heapdump')` in your module and cause it to write a heap snapshot via `kill -USR2 <pid>`
-- before a heap dump is taken, v8 [performs two GC
-  cycles](https://github.com/v8/v8/blob/21f01f64c420fffdb917c9890d03f1eb0c2c1ede/src/heap-snapshot-generator.cc#L2594-L2599)
-  (also for [Node.js
-  `v0.10`](https://github.com/joyent/node/blob/v0.10.29-release/deps/v8/src/profile-generator.cc#L3091-L3096))in order
-  to remove collectable objects
-- objects in the resulting heapdump are still referenced and thus couldn't be garbage collected
+[read](https://developers.google.com/web/tools/chrome-devtools/memory-problems/#allocation-profile)
 
-##### Ensuring GC
+- helps identify functions responsible for allocating memory
+- in case of memory leaks or performance issues due to lots of allocatd objects it can be used
+  to track down which functions allocate most memory
 
-Although as mentioned above before a heapdump is taken all garbage is collected, I found that manually triggering
-garbage collection and forcing the GC to compact yields better results. The reason for this is unclear to me.
+![memory-hog-allocation-timeline](assets/memory-allocation-timeline.gif)
 
-Add the below snippet to your code which will only activate if you are exposing the garbage collector:
+#### Recording Allocation Profile with Node.js
 
-```js
-// shortest
-if (typeof gc === 'function') setTimeout(gc, 1000);
+- run app via `node --inspect` or `node --inspect-brk`
+- open DevTools anywhere and click on the Node.js icon in the upper left corner to open a
+  dedicated Node.js DevTools instance
+- select the _Memory_ tab and there select _Record allocation profile_ and then click _Start_
+  - the application will continue running automatically if it was paused, i.e. due to use of
+    `--inspect-brk`
+- stop profiling via the red circle on the upper left and select _Chart_ from the dropdown on
+  the left
+- you will see a function execution stack with the functions that allocated the most memory or
+  had children that executed lots of memory being the widest
 
-// longer in order to see indicators of gc being performed
-if (typeof gc === 'function') {
-  setTimeout(function doGC() { gc(); process.stdout.write(' gc ') }, 1000);
-}
-```
+### DevTools Heap Snapshots
 
-Then run your app with the appropriate flags to expose the gc and force compaction.
+![memory-heapsnapshot](https://developers.google.com/web/tools/chrome-devtools/memory-problems/imgs/take-heap-snapshot.png)
 
-```
-node --always-compact --expose-gc app.js
-```
+[read](https://developers.google.com/web/tools/chrome-devtools/memory-problems/heap-snapshots#take_a_snapshot)
+_out of date graphics, but most still works as shown_
+[read](https://developers.google.com/web/tools/chrome-devtools/memory-problems/#discover_detached_dom_tree_memory_leaks_with_heap_snapshots)
+_example is about DOM nodes, but techniques apply in general_
 
-Now you can wait for the garbage collection to occur and take a heapdump right after.
+- taking heap snapshots is quite easy, but the challenge is understanding whats in them
+- when investigating leaks it is a good idea to trigger garbage collection right before taking
+  a snapshot via the _collect garbage trashcan_ in the upper left
 
-Alternatively you can add a hook to your app, i.e. a route, that will trigger manual `gc` and invoke that before taking
-a heapdump.
+#### Taking Heap Snapshot with Node.js
 
-#### Considerations to make code easier to debug
-
-The usefulness of the information presented in the below views depends on how you authored your code. Here are a few
-rules to make your code more debuggable.
-
-###### Name your function declarations
-
-This requires little extra effort but makes is so much easier to track down which function is closing over an object and
-thus prevents it from being collected. Unfortunately CoffeeScript generates JS that has unnamed functions due to a bug
-in older Internet Explorers.
-
-The below does **not** show as `foo` in the snapshot:
-
-```js
-var foo = function () {
-  [..]
-}
-```
-
-This one will:
-
-```js
-var foo = function foo() {
-  [..]
-}
-```
-
-This one as well:
-
-```js
-function foo() {
-  [..]
-}
-```
+- run app via `node --inspect`
+- open DevTools anywhere and click on the Node.js icon in the upper left corner to open a
+  dedicated Node.js DevTools instance
+- select the _Memory_ tab and there select _Take Heap Snapshot_ and then click _Take Sanpshot_
+- perform this multiple times in order to to detect leaks as explained in [advanced comparison
+  technique](#advanced-comparison-technique)
 
 #### Views
 
-[overview](https://developer.chrome.com/devtools/docs/heap-profiling#basics)
+[overview](https://developer.chrome.com/devtools/docs/heap-profiling#basics) |
+[overview](https://developers.google.com/web/tools/chrome-devtools/memory-problems/heap-snapshots#take_a_snapshot)
+
+Even though views here are explained in conjunction with taking a heap snapshot, most of them
+are also available when using any of the other techniques like _allocation profile_ or
+_allocation timeline_.
 
 ##### Color Coding
 
-[read](https://developer.chrome.com/devtools/docs/javascript-memory-profiling#looking-up-color-coding)
+[read](https://developers.google.com/web/tools/chrome-devtools/memory-problems/heap-snapshots#look_up_color_coding)
 
 Properties and values are colored according to their types.
 
@@ -242,7 +236,7 @@ Properties and values are colored according to their types.
 
 ##### Summary View
 
-[read](https://developer.chrome.com/devtools/docs/javascript-memory-profiling#summary-view)
+[read](https://developers.google.com/web/tools/chrome-devtools/memory-problems/heap-snapshots#summary_view)
 
 - shows top level entries, a row per constructor
 - columns for distance of the object to the *GC root*, number of object instances, shallow size and retained size.
@@ -258,12 +252,15 @@ Properties and values are colored according to their types.
 
 ##### Comparison View
 
+[read](https://developers.google.com/web/tools/chrome-devtools/memory-problems/heap-snapshots#comparison_view)
+
 - compares multiple snapshots to each other
+- note that **the preferred way to investigate leaks is the [advanced comparison
+  technique](#advanced-comparison-technique)** using the summary view
 - shows diff of both and delta in ref counts and freed and newly allocated memory
 - used to find leaked objects
 - after starting and completing (or canceling) the action, no garbage related to that action should be left
 - note that garbage is collected each time a snapshot is taken, therefore remaining items are still referenced
-
 
 1. Take bottom line snapshot
 2. Perform operation that might cause a leak
@@ -271,58 +268,14 @@ Properties and values are colored according to their types.
    should no longer be needed
 4. Take second snapshot
 5. Compare both snapshots
-  - select a Snapshot, then *Comparison* on the left and another Snapshot to compare it to on the right
-  - the *Size Delta* will tell you how much memory couldn't be collected
+    - select a Snapshot, then *Comparison* on the left and another Snapshot to compare it to on the right
+    - the *Size Delta* will tell you how much memory couldn't be collected
 
-
-![compare-snapshots](https://github.com/thlorenz/v8-perf/blob/master/assets/devtools-compare-snapshots.png)
-
-###### Advanced Comparison Technique
-
-[slides](https://speakerdeck.com/addyosmani/javascript-memory-management-masterclass?slide=102)
-
-Use at least three snapshots and compare those.
-
-1. Take bottom line snapshot *Checkpoint 1*
-2. Perform operation that might cause a leak
-3. Take snapshot *Checkpoint 2*
-4. Perform same operation as in *2.*
-5. Take snapshot *Checkpoint 3*
-
-
-- all memory needed to perform action the first time should have been collected by now
-- any objects allocated between *Checkpoint 1* and *Checkpoint 2* should be no longer present in *Checkpoint 3*
-- select *Snapshot 3* and from the dropdown on the right select *Objects allocated between Snapshot 1 and 2*
-- ideally you see no *Objects* that are created by your application (ignore memory that is unrelated to your action,
-  i.e. *(compiled code)*)
-- if you see any *Objects* that shouldn't be there but are in doubt create a 4th snapshot and select *Objects allocated
-  between Snapshot 1 and 2* as shown in the picture below
-
-![4-snapshots](https://github.com/thlorenz/v8-perf/blob/master/assets/devtools-4-snapshots.png)
-
-##### Object Allocation Tracker
-
-[watch](http://youtu.be/LaxbdIyBkL0?t=50m33s)
-
-- **not supported by Node.js** ATM
-- now **preferred over snapshot comparisons** especially to track down memory leaks
-- *blue* bars show memory allocations
-- *grey* bars show memory deallocations
-
-###### Allocation Stack
-
-[slides](https://speakerdeck.com/addyosmani/javascript-memory-management-masterclass?slide=102)
-[watch](http://youtu.be/LaxbdIyBkL0?t=51m30s)
-
-- only available when using *Object Allocation Tracker*
-- needs to be enabled in settings *General/Profiler/Record heap allocation stack traces*
-- shows stack traces of executed code that led to the object being allocated
-
-![allocation-stack](https://github.com/thlorenz/v8-perf/blob/master/assets/devtools-allocation-stack.png)
+![compare-snapshots](assets/memory-compare-snapshots.png)
 
 ##### Containment View
 
-[read](https://developer.chrome.com/devtools/docs/javascript-memory-profiling#containment-view)
+[read](https://developers.google.com/web/tools/chrome-devtools/memory-problems/heap-snapshots#containment_view)
 
 - birds eye view of apps object structure
 - low level, allows peeking inside function closures and look at VM internal objects
@@ -342,7 +295,7 @@ Additional entry points only present when profiling a Node.js app:
 
 ##### Dominators View
 
-[read](https://developer.chrome.com/devtools/docs/javascript-memory-profiling#dominators-view)
+[read](https://developers.google.com/web/tools/chrome-devtools/memory-problems/heap-snapshots#dominators_view)
 
 - only available once *Settings/General/Profiler/Show advanced heap snapshot properties* is checked and browser
   refreshed afterwards
@@ -379,15 +332,65 @@ Additional entry points only present when profiling a Node.js app:
 - therefore they should be used sparingly to avoid unnecessary [semantic
   garbage](https://en.wikipedia.org/wiki/Garbage_(computer_science))
 
-## Resources
+###### Advanced Comparison Technique
 
+[slides](https://speakerdeck.com/addyosmani/javascript-memory-management-masterclass?slide=102)
+
+Use at least three snapshots and compare those.
+
+1. Take bottom line snapshot *Checkpoint 1*
+2. Perform operation that might cause a leak
+3. Take snapshot *Checkpoint 2*
+4. Perform same operation as in *2.*
+5. Take snapshot *Checkpoint 3*
+
+
+- all memory needed to perform action the first time should have been collected by now
+- any objects allocated between *Checkpoint 1* and *Checkpoint 2* should be no longer present in *Checkpoint 3*
+- select *Snapshot 3* and from the dropdown on the right select *Objects allocated between Snapshot 1 and 2*
+- ideally you see no *Objects* that are created by your application (ignore memory that is unrelated to your action,
+  i.e. *(compiled code)*)
+- if you see any *Objects* that shouldn't be there but are in doubt create a 4th snapshot and select *Objects allocated
+  between Snapshot 1 and 2* as shown in the picture below
+
+![4-snapshots](assets/memory-4-snapshots.png)
+
+#### Dynamic Heap Limit and Large HeapSnapshots
+
+[read](https://v8project.blogspot.com/2017/02/one-small-step-for-chrome-one-giant.html) _One small step for Chrome, one giant heap for V8_
+
+- v8's ability to dynamically increase its heap limit allows taking heap snapshot when close to
+  running out of memory
+- `set_max_old_space_size` is exposed to v8 embedders as part of the _ResourceConstraints_ API
+  to allow them to increase the heap limit
+- DevTools added feature to pause application when close to running out of memory
+  1. pauses application and increases heap limit which allows taking a snapshot, inspect the
+  heap, evaluate expressions, etc.
+  2. developer can then clean up items that are taking up memory
+  3. application can be resumed
+- you can try it by running `node --inspect examples/memory-hog` in this repo, and opening a
+  Node.js dedicated DevTools to see it it pause due to _potential out of memory crash_
+
+## Considerations to make code easier to debug
+
+The usefulness of the information presented in the views depends on how you authored your code. Here are a few
+rules to make your code more debuggable.
+
+Anonymous functions, i.e. `function() { ... }` show as `(anonymous)` and thus are hard to find
+in your code. v8 + DevTools are getting smarter about this, i.e. for arrow functions where
+`setTimeout(() => { ... }, TIMEOUT)` will show as `setTimeout` and you can navigate to the
+function during a live profiling session.
+
+However it is recommended to name your functions to make memory and performance profiling as
+well as debugging your applications easier.
+
+## Resources
 
 ### blogs/tutorials
 
 Keep in mind that most of these are someehwat out of date albeit still useful.
 
 - [chrome-docs memory profiling](https://developer.chrome.com/devtools/docs/javascript-memory-profiling)
-  - [related demos](https://developer.chrome.com/devtools/docs/javascript-memory-profiling#supporting-demos) including [more resources](https://developer.chrome.com/devtools/docs/javascript-memory-profiling#community-resources)
 - [chrome-docs Memory Analysis 101](https://developer.chrome.com/devtools/docs/memory-analysis-101) overlaps with chrome-docs memory profiling
 - [chrome-docs heap profiling](https://developer.chrome.com/devtools/docs/heap-profiling) overlaps with chrome-docs memory profiling
 - [Chasing Leaks With The Chrome DevTools Heap Profiler Views](https://plus.google.com/+AddyOsmani/posts/D3296iL3ZRE)
@@ -406,8 +409,10 @@ Keep in mind that most of these are someehwat out of date albeit still useful.
 
 - [The Breakpoint Ep8: Memory Profiling with Chrome DevTools](https://www.youtube.com/watch?v=L3ugr9BJqIs)
 - [Google I/O 2013 - A Trip Down Memory Lane with Gmail and DevTools](https://www.youtube.com/watch?v=x9Jlu_h_Lyw#t=1448)
+- [Memory Profiling for Mere Mortals - 2016](https://www.youtube.com/watch?v=taADm6ndvVo)
 
 ### slides
 
 - [Finding and debugging memory leaks in JavaScript with Chrome DevTools](http://www.slideshare.net/gonzaloruizdevilla/finding-and-debugging-memory-leaks-in-javascript-with-chrome-devtools)
 - [eliminating memory leaks in Gmail](https://docs.google.com/presentation/d/1wUVmf78gG-ra5aOxvTfYdiLkdGaR9OhXRnOlIcEmu2s/pub?start=false&loop=false&delayms=3000#slide=id.g1d65bdf6_0_0)
+- [Memory Profiling for Mere Mortals Slides - 2016](http://thlorenz.com/talks/memory-profiling.2016/book/)
