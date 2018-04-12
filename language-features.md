@@ -147,7 +147,7 @@ arr.map(convert.bind(this))
 
 ## Reflection API
 
-- `Reflect.apply` and `Reflect.construct` received 17x performance boost in v8 v6.1 and
+- `Reflect.apply` and `Reflect.construct` received 17x performance boost in V8 v6.1 and
   therefore should be considered performant at this point
 
 ### Resources
@@ -365,7 +365,7 @@ const FooBar = createClassBasedOn(Bar)
 
 ### Recommendations
 
-- TypedArrays should be used wherever possible as it allows v8 to apply optimizations faster
+- TypedArrays should be used wherever possible as it allows V8 to apply optimizations faster
   and more aggressively than for instance with plain Arrays
 - any remaining bottlenecks will be fixed ASAP as TypedArrays being fast is a prerequisite of
   Webgl performing smoothly
@@ -393,7 +393,7 @@ const FooBar = createClassBasedOn(Bar)
 - make sure to neither modify the `RegExp` instance or its prototype as that will interfere
   with optimizations applied to regex operations
 - [named capture groups](https://developers.google.com/web/updates/2017/07/upcoming-regexp-features#named_captures)
-  are supported starting with v8 v6.4
+  are supported starting with V8 v6.4
 
 ### Resources
 
@@ -416,9 +416,9 @@ const FooBar = createClassBasedOn(Bar)
 
 ## Promises Async/Await
 
-- native Promises in v8 have seen huge performance improvements as well as their use via
+- native Promises in V8 have seen huge performance improvements as well as their use via
   `async/await`
-- v8 exposes C++ API allowing to trace through Promise lifecycle which is used by Node.js API
+- V8 exposes C++ API allowing to trace through Promise lifecycle which is used by Node.js API
   to provide insight into Promise execution
 - DevTools async stacktraces make Promise debugging a lot easier
 - DevTools _pause on exception_ breaks immediately when a Promise `reject` is invoked
@@ -442,7 +442,7 @@ const FooBar = createClassBasedOn(Bar)
 ## Proxies
 
 - [proxies](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy)
-  required 4 jumps between C++ and JavaScript runtimes in the previous v8 compiler
+  required 4 jumps between C++ and JavaScript runtimes in the previous V8 compiler
   implementation
 - porting C++ bits to [CodeStubAssembler](compiler.md#codestubassembler) allows all execution
   to happen inside the JavaScript runtime, resulting in 0 jumps between runtimes

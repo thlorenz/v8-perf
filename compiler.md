@@ -3,8 +3,8 @@
 _find the previous version of this document at
 [crankshaft/compiler.md](crankshaft/compiler.md)_
 
-Fully activated with v8 version 5.9. Earliest LTS Node.js release with a TurboFan activated
-pipleline is Node.js v8.
+Fully activated with V8 version 5.9. Earliest LTS Node.js release with a TurboFan activated
+pipleline is Node.js V8.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -123,7 +123,7 @@ Once crankshaft was taken out of the mix the below pipeline was possible
   CFG
 - to achieve that fluid code motion, control flow optimizations and precise numerical range
   analysis are used
-- clearer separation between JavaScript, v8 and the target architectures allows cleaner, more
+- clearer separation between JavaScript, V8 and the target architectures allows cleaner, more
   robust generated code and adds flexibility
 - generates better quality machine code than Crankshaft JIT
 - crossing from JS to C++ land has been minimized using techniques like CodeStubAssembler
@@ -137,11 +137,11 @@ Once crankshaft was taken out of the mix the below pipeline was possible
   (speculative optimizations aren't cheap)
 - pages need to load fast and unoptimized code needs to run fast _enough_, esp. on mobile
   devices
-- previous v8 implementations suffered from _performance cliffs_
+- previous V8 implementations suffered from _performance cliffs_
   - optimized code ran super fast (focus on peak performance case)
   - baseline performance was much lower
-  - as a result one feature in your code that caused deoptimization would affect your app's
-    performance dramatically, i.e. 100x difference
+  - as a result one feature in your code that prevented it's optimization would affect your
+    app's performance dramatically, i.e. 100x difference
 - TurboFan improves this as
   - widens fast path to ensure that optimized code is more flexible and can accept more types
     of arguments
@@ -171,6 +171,7 @@ Once crankshaft was taken out of the mix the below pipeline was possible
 
 - no longer relying on optimizing compiler for _sufficiently_ fast code
 - thus improved baseline performance allows delaying optimization until more feedback is collected
+- avoids optimizations of infrequently executed code
 - leads to less time and resources spent optimizing
 
 ### New Language Features
@@ -190,7 +191,7 @@ Once crankshaft was taken out of the mix the below pipeline was possible
 - need to support debugging and be inspectable, this is achieved via better integration with
   Chrome DevTools
 - new language features are easier optimized which makes them useable after much shorter time
-  after they are introduced to v8 (previously performance issues for new features prevented
+  after they are introduced to V8 (previously performance issues for new features prevented
   their use in code that needed to run fast)
 - performance of ES6 features relative to the ES5 baseline operations per second tracked at [sixspeed](http://incaseofstairs.com/six-speed/)
 - at this point ES6 features are almost on par with ES5 versions of same code for most cases
@@ -221,7 +222,7 @@ Once crankshaft was taken out of the mix the below pipeline was possible
   - redundant operations removed
   - minimize number of register transfers
 - this results in highly optimized and small interpreter code which can execute the bytecode instructions
-  and interact with rest of v8 VM in low overhead manner
+  and interact with rest of V8 VM in low overhead manner
 - Ignition Interpreter uses a [register machine](https://en.wikipedia.org/wiki/Register_machine)
   with each bytecode specifying inputs and outputs as explicit register operands
 - holds its local state in _interpreter registers_
@@ -231,6 +232,8 @@ Once crankshaft was taken out of the mix the below pipeline was possible
   load/store operations (from/to explicit registers)
 - current stack frame is identified by stack pointer
 - program counter points to currently executed instruction in the bytecode
+- each bytecode handler tail-calls into the next bytecode handler (indirectly threaded
+  interpreter)
 
 ## Collecting Feedback via ICs
 
@@ -249,13 +252,13 @@ Once crankshaft was taken out of the mix the below pipeline was possible
 - if monomorphic compare maps and if they match just load prop at offset in memory, i.e. `mov eax, [eax+0xb]`
 - IC feedback slots reserved when AST is created, see them via `--print-ast`, i.e. `Slot(0) at 29`
 - collect typeinfo for ~24% of the function's ICs before attempting optimization
-- feedback vectors aren't embedded in optimized code but map ids or specific type checks, like for SMIs
+- feedback vectors aren't embedded in optimized code but map ids or specific type checks, like for Smis
 - see optimization + IC info via [`--trace-opt`](inspection.md#tracing-optimizations)
 - evaluate ICs via the  [`--trace-ic` flag](inspection.md#tracing-inline-caches)
 
 ### Monomorphism vs. Polymorphism
 
-[watch](http://youtu.be/UJPdhx5zTaw?t=31m30s) | [slide](http://v8-io12.appspot.com/index.html#61)
+[watch](https://youtu.be/UJPdhx5zTaw?t=31m30s) | [slide](http://v8-io12.appspot.com/index.html#61)
 
 - operations are monomorphic if hidden classes of arguments are **always** same
 - all others are polymorphic at best and megamorphic at worst
@@ -312,7 +315,7 @@ Once crankshaft was taken out of the mix the below pipeline was possible
 TurboFan is a simple compiler + backend responsible for the following:
 
 - instruction selection + scheduling
-  - innovative scheduling algorithm makes use of reordering freedom ([sea of nodes]()) to move
+  - innovative scheduling algorithm makes use of reordering freedom ([sea of nodes](#sea-of-nodes)) to move
     code out of loops into less frequently executed paths
 - register allocation
 - code generation
@@ -326,11 +329,11 @@ TurboFan is not just an optimizing compiler:
 - interpreter bytecode handlers run on top of TurboFan
 - builtins benefit from TurboFan
 - code stubs / IC subsystem runs on top of TurboFan
-- web assembly code generation (also runs on top of TurboFan)
+- web assembly code generation (also runs on top of TurboFan by using its back-end passes)
 
 ## Speculative Optimization
 
-[watch](http://youtu.be/VhpdsjBUS3g?t=18m53s)
+[watch](https://youtu.be/VhpdsjBUS3g?t=18m53s)
 
 - recompiles and optimizes hot code identified by the runtime profiler
 - compiler speculates that kinds of values seen in the past will be see in the future as well
@@ -385,7 +388,7 @@ Return        ; end execution, return value in accum. reg. and tranfer control t
 
 [slides](https://docs.google.com/presentation/d/1Z6oCocRASCfTqGq1GCo1jbULDGS-w-nzxkbVF7Up0u0/edit#slide=id.p) |
 [slides](https://docs.google.com/presentation/d/1wZVIqJMODGFYggueQySdiA3tUYuHNMcyp_PndgXsO1Y/edit#slide=id.g19ee040be6_0_180) |
-[watch](http://youtu.be/UJPdhx5zTaw?t=36m50s)
+[watch](https://youtu.be/UJPdhx5zTaw?t=36m50s)
 
 - optimizations are speculative and assumptions are made
 - if assumption is violated
@@ -463,21 +466,21 @@ jo Deoptimize                   ; if overflowed bail
 - one cause was altering the shape of the array in the callback function of a second order
   array builtin, i.e. by changing it's length
 - TurboFan kept trying to optimized and gave up after ~30 attempts
-- starting with v8 v6.5 this is detected and array built in is no longer inlined at that site
+- starting with V8 v6.5 this is detected and array built in is no longer inlined at that site
   on future optimization attempts
 
 ### Causes for Deoptimization
 
 #### Modifying Object Shape
 
-[watch](http://youtu.be/VhpdsjBUS3g?t=21m00s)
+[watch](https://youtu.be/VhpdsjBUS3g?t=21m00s)
 
 - added fields (order matters) to object generate id of hidden class
 - adding more fields later on generates new class id which results in code using Point that now gets Point' to be
   deoptimized
 
-[watch](http://youtu.be/VhpdsjBUS3g?t=21m45s)
-[watch](http://youtu.be/UJPdhx5zTaw?t=12m18s)
+[watch](https://youtu.be/VhpdsjBUS3g?t=21m45s)
+[watch](https://youtu.be/UJPdhx5zTaw?t=12m18s)
 
 ```js
 function Point(x, y) {
@@ -502,7 +505,13 @@ p.z = 3;                 // => another hidden class (Point') created
 ##### Considerations
 
 - avoid hidden class changes
-- initialize all members in **constructor function** and **in the same order**
+- initialize all members in the **class constructor** or the **prototype constructor function**
+  and **in the same order**
+  - this creates one place in your code base where properties are assigned to an Object
+  - you may use Object literals, i.e. `const a = {}` or `const a = { b: 1 }`, as they also
+    benefit from hidden classes, but the creation of those may be spread around your code base
+    and it becomes much harder to verify that you are assigning the same properties in the same
+    order
 
 #### Class Definitions inside Functions
 
@@ -535,7 +544,7 @@ function usePoint(point) {
 - thus each new point has a different prototype and thus a different object shape
 - passing these objects with differing prototypes to `usePoint` makes that function
   become polymorphic
-- v8 gives up on polymorphism after it has seen **more than 4** different object shapes, and enters
+- V8 gives up on polymorphism after it has seen **more than 4** different object shapes, and enters
   megamorphic state
 - as a result `usePoint` won't be optimized
 - pulling the `Point` class definition out of the `createPoint` function fixes that issue as
@@ -643,9 +652,9 @@ to the following characteristics.
 - CSA includes type verification at IR level to catch many correctness bugs at compile time
 - CSA's instruction selector ensures that optimal code is generated on all platforms
 - CSA's performs register allocations automatically
-- CSA understands API calling conventions, both standard C++ and internal v8 register-based,
+- CSA understands API calling conventions, both standard C++ and internal V8 register-based,
   i.e. entry-point stubs into C++ can easily be called from CSA,  making trivial to
-  interoperate between CSA generated code and other parts of v8
+  interoperate between CSA generated code and other parts of V8
 - CSA-based built in functionality can easily be inlined into Ignition bytecode handlers to
   improve its performance
 - builtins are coded in that DSL (no longer [self hosted](https://en.wikipedia.org/wiki/Self-hosting))
@@ -705,8 +714,8 @@ few examples.
 
 ### Videos
 
-- [performance improvements in latest v8 - 2017](https://youtu.be/HDuSEbLWyOY?t=4m58s)
-- [v8 and how it listens to you - ICs and FeedbackVectors - 2017](https://www.youtube.com/watch?v=u7zRSm8jzvA)
+- [performance improvements in latest V8 - 2017](https://youtu.be/HDuSEbLWyOY?t=4m58s)
+- [V8 and how it listens to you - ICs and FeedbackVectors - 2017](https://www.youtube.com/watch?v=u7zRSm8jzvA)
 - [Escape Analysis in V8 - 2018](https://www.youtube.com/watch?v=KiWEWLwQ3oI)
 
 ### More Resources

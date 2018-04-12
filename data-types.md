@@ -41,32 +41,34 @@ _find the previous version of this document at
 
 ## Efficiently Representing Values and Tagging
 
-[watch](http://youtu.be/UJPdhx5zTaw?t=15m35s) | [slide](http://v8-io12.appspot.com/index.html#34)
+[watch](https://youtu.be/UJPdhx5zTaw?t=15m35s) | [slide](http://v8-io12.appspot.com/index.html#34)
 
 [read](http://jayconrod.com/posts/52/a-tour-of-v8-object-representation) *Numbered properties: fast elements*
 
 - most objects in heap are 4-byte aligned
 - according to spec all numbers in JS are 64-bit floating doubles
-- v8 passes around 32-bit numbers to represent all values for improved efficiency
-- bottom bit reserved as tag to signify if value is a SMI (small integer) or a pointer to an object
+- V8 passes around 32-bit numbers to represent all values for improved efficiency
+- bottom bit reserved as tag to signify if value is a Smi (small integer) or a pointer to an object
 
-[watch](http://youtu.be/UJPdhx5zTaw?t=10m05ss) | [slide](http://v8-io12.appspot.com/index.html#35)
+[watch](https://youtu.be/UJPdhx5zTaw?t=10m05ss) | [slide](http://v8-io12.appspot.com/index.html#35)
 
 ```
 | object pointer              | 1 |
 
 or
 
-| 31-bit-signed integer (SMI) | 0 |
+| 31-bit-signed integer (Smi) | 0 |
 ```
 
 - numbers bigger than 31 bits are boxed
 - stored inside an object referenced via a pointer
 - adds extra overhead (at a minimum an extra lookup)
+- on 64 bit architectures Smis are `32-bit-signed` instead of the `31-bit-signed` on 32 bit
+  architectures
 
 ### Considerations
 
-- prefer SMIs for numeric values whenever possible
+- prefer Smis for numeric values whenever possible
 
 ## Objects
 
@@ -112,7 +114,7 @@ or
 - aka objects in *dictionary mode*
 - accessing hash table property is much slower than accessing a field at a known offset
 - if *non-symbol* string is used to access a property it is *uniquified* first
-- v8 hash tables are large arrays containing keys and values
+- V8 hash tables are large arrays containing keys and values
 - initially all keys and values are `undefined`
 
 #### HashTables and Hash Codes
@@ -144,7 +146,7 @@ or
 [read](http://jayconrod.com/posts/52/a-tour-of-v8-object-representation) *Fast, in-object properties* |
 [read](https://developers.google.com/v8/design#prop_access)
 
-- v8 describes the structure of objects using maps used to create *hidden classes* and match data types
+- V8 describes the structure of objects using maps used to create *hidden classes* and match data types
   - resembles a table of descriptors with one entry for each property
   - map contains info about size of the object
   - map contains info about pointers to constructors and prototypes
@@ -248,7 +250,7 @@ class Point {
 
 - both variations share `M0` which has two *transitions*
 - not all `Point`s share same map
-- in worse cases v8 drops object into *dictionary mode* in order to prevent huge number of maps to be allocated
+- in worse cases V8 drops object into *dictionary mode* in order to prevent huge number of maps to be allocated
   - when assigning random properties to objects from same constructor in random order
   - when deleting properties
 
@@ -258,7 +260,7 @@ class Point {
 
 - objects allocated by a constructor are given enough memory for 32 *fast* properties to be stored
 - after certain number of objects (8) were allocated from same constructor
-  - v8 traverses *transition tree* from initial map to determine size of largest of these initial objects
+  - V8 traverses *transition tree* from initial map to determine size of largest of these initial objects
   - new objects of same type are allocated with exact amount of memory to store max number of properties
   - initial objects are resized (down)
 
@@ -318,7 +320,7 @@ class Point {
 }
 ```
 
-- v8 represents prototype methods (aka _class methods_) using `constant_function` descriptors
+- V8 represents prototype methods (aka _class methods_) using `constant_function` descriptors
 - calling prototype methods maybe a **tiny** bit slower due to overhead of the following:
   - check *receiver's* map (as with *own* properties)
   - check maps of *prototype chain* (extra step)
@@ -332,20 +334,20 @@ class Point {
 
 - numbered properties are treated and ordered differently than others since any object can *behave* like an array
 - *element* === any property whose key is non-negative integer
-- v8 stores elements separate from named properties in an *elements kind* field (see [structure diagram](#structure))
+- V8 stores elements separate from named properties in an *elements kind* field (see [structure diagram](#structure))
 - if object drops into *dictionary mode* for elements, access to named properties remains fast and vice versa
 - maps don't need *transitions* to maps that are identical except for *element kinds*
 - most elements are *fast elements* which are stored in a contiguous array
 
 ## Arrays
 
-[watch](http://youtu.be/UJPdhx5zTaw?t=17m25s) | [slide](http://v8-io12.appspot.com/index.html#38)
+[watch](https://youtu.be/UJPdhx5zTaw?t=17m25s) | [slide](http://v8-io12.appspot.com/index.html#38)
 
 [read](http://jayconrod.com/posts/52/a-tour-of-v8-object-representation) *Numbered properties: fast elements*
 
 [read](https://v8project.blogspot.com/2017/08/fast-properties.html)
 
-- v8 has two methods for storing arrays, *fast elements* and *dictionary elements*
+- V8 has two methods for storing arrays, *fast elements* and *dictionary elements*
 
 ### Fast Elements
 
@@ -366,7 +368,7 @@ class Point {
 
 #### Packed vs. Holey Elements
 
-- v8 makes distinction whether the elements backing store is packed or has holes
+- V8 makes distinction whether the elements backing store is packed or has holes
 - holes in a backing store are created by deleting an indexed element
 - missing properties are marked with special _hole_ value to keep Array functions performant
 - however missing properties cause expensive lookups on prototype chain
@@ -376,7 +378,7 @@ class Point {
 [read](https://v8project.blogspot.com/2017/09/elements-kinds-in-v8.html)
 
 - fast *elements kinds* in order of increasing generality:
-  - fast SMIs (small integers)
+  - fast Smis (small integers)
   - fast doubles (Doubles stored in unboxed representation)
   - fast values (strings or other objects)
 
@@ -399,18 +401,18 @@ class Point {
 
 ### Double Array Unboxing
 
-[watch](http://youtu.be/UJPdhx5zTaw?t=20m20s) | [slide](http://v8-io12.appspot.com/index.html#45)
+[watch](https://youtu.be/UJPdhx5zTaw?t=20m20s) | [slide](http://v8-io12.appspot.com/index.html#45)
 
 - Array's hidden class tracks element types
 - if all doubles, array is unboxed aka *upgraded to fast doubles*
   - wrapped objects layed out in linear buffer of doubles
   - each element slot is 64-bit to hold a double
-  - SMIs that are currently in Array are converted to doubles
+  - Smis that are currently in Array are converted to doubles
   - very efficient access
   - storing requires no allocation as is the case for boxed doubles
   - causes hidden class change
   - requires expensive copy-and-convert operation
-- careless array manipulation may cause overhead due to boxing/unboxing [watch](http://youtu.be/UJPdhx5zTaw?t=21m50s) |
+- careless array manipulation may cause overhead due to boxing/unboxing [watch](https://youtu.be/UJPdhx5zTaw?t=21m50s) |
   [slide](http://v8-io12.appspot.com/index.html#47)
 
 ### Typed Arrays
@@ -419,7 +421,7 @@ class Point {
 [spec](https://www.khronos.org/registry/typedarray/specs/latest/)
 
 - difference is in semantics of indexed properties
-- v8 uses unboxed backing stores for such typed arrays
+- V8 uses unboxed backing stores for such typed arrays
 
 #### Float64Array
 
@@ -431,7 +433,7 @@ class Point {
 - don't pre-allocate large arrays (`>64K`), instead grow as needed, to avoid them being considered sparse
 - do pre-allocate small arrays to correct size to avoid allocations due to resizing
 - avoid creating holes, and thus don't delete elements
-- don't load uninitialized or deleted elements [watch](http://youtu.be/UJPdhx5zTaw?t=19m30s) |
+- don't load uninitialized or deleted elements [watch](https://youtu.be/UJPdhx5zTaw?t=19m30s) |
   [slide](http://v8-io12.appspot.com/index.html#43)
 - use literal initializer for Arrays with mixed values
 - don't store non-numeric values in numeric arrays
@@ -440,7 +442,7 @@ class Point {
   array of numbers
 - when copying an array, you should avoid copying from the back (higher indices to lower
   indices) because this will almost certainly trigger dictionary mode
-- avoid elements kind transitions, i.e. edge case of adding `-0, NaN, Infinity` to a SMI array
+- avoid elements kind transitions, i.e. edge case of adding `-0, NaN, Infinity` to a Smi array
   as they are represented as doubles
 
 ## Strings
@@ -458,11 +460,12 @@ map |len |hash|characters
 
 ## Resources
 
-- [video: breaking the javascript speed limit with v8](https://www.youtube.com/watch?v=UJPdhx5zTaw) |
+- [video: breaking the javascript speed limit with V8](https://www.youtube.com/watch?v=UJPdhx5zTaw) |
   [slides](http://v8-io12.appspot.com/index.html#1)
-- [tour of v8: garbage collection - 2013](http://jayconrod.com/posts/55/a-tour-of-v8-garbage-collection)
-- [tour of v8: object representation - 2013](http://jayconrod.com/posts/52/a-tour-of-v8-object-representation)
-- [v8-design](https://developers.google.com/v8/design#garb_coll)
+- [tour of V8: garbage collection - 2013](http://jayconrod.com/posts/55/a-tour-of-v8-garbage-collection)
+- [tour of V8: object representation - 2013](http://jayconrod.com/posts/52/a-tour-of-v8-object-representation)
+- [V8-design](https://developers.google.com/v8/design#garb_coll)
 - [Fast Properties in V8 - 2017](https://v8project.blogspot.com/2017/08/fast-properties.html)
 - [“Elements kinds” in V8 - 2017](https://v8project.blogspot.com/2017/09/elements-kinds-in-v8.html)
 - [video: V8 internals for JavaScript developers - 2018](https://www.youtube.com/watch?v=m9cTaYI95Zc)
+- [slides: V8 internals for JavaScript developers - 2018](https://slidr.io/mathiasbynens/v8-internals-for-javascript-developers)

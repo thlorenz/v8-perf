@@ -1,0 +1,7 @@
+{
+  "name": "v8-perf-tests",
+  "devDependencies": {
+    "ansicolors": "~0.3.2",
+    "tape": "~4.9.0"
+  }
+}

@@ -1,6 +1,6 @@
-# v8 runtime functions
+# V8 runtime functions
 
-- v8 JS lib uses minimal set of C+ runtime functions (callable from JavaScript)
+- V8 JS lib uses minimal set of C+ runtime functions (callable from JavaScript)
 - lots of these have names starting with `%` and are visible
 - others aren't visible as they are only called by generated code
   - they are defined inside [v8/runtime.h](https://cs.chromium.org/chromium/src/v8/src/runtime/runtime.h)
@@ -17,4 +17,4 @@
 
 ## Resources
 
-- [short doc on v8 wiki](https://github.com/v8/v8/wiki/Built-in-functions)
+- [short doc on V8 wiki](https://github.com/v8/v8/wiki/Built-in-functions)

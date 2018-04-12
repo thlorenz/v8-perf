@@ -46,7 +46,7 @@
   *
   */
 
-var test = require('tap').test;
+var test = require('tape');
 
 function isInteger(val) {
   /*jshint ignore:start*/
