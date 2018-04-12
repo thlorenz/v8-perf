@@ -502,7 +502,13 @@ p.z = 3;                 // => another hidden class (Point') created
 ##### Considerations
 
 - avoid hidden class changes
-- initialize all members in **constructor function** and **in the same order**
+- initialize all members in the **class constructor** or the **prototype constructor function**
+  and **in the same order**
+  - this creates one place in your code base where properties are assigned to an Object
+  - you may use Object literals, i.e. `const a = {}` or `const a = { b: 1 }`, as they also
+    benefit from hidden classes, but the creation of those may be spread around your code base
+    and it becomes much harder to verify that you are assigning the same properties in the same
+    order
 
 #### Class Definitions inside Functions
 
