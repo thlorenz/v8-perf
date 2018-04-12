@@ -48,7 +48,7 @@ _find the previous version of this document at
 - most objects in heap are 4-byte aligned
 - according to spec all numbers in JS are 64-bit floating doubles
 - V8 passes around 32-bit numbers to represent all values for improved efficiency
-- bottom bit reserved as tag to signify if value is a SMI (small integer) or a pointer to an object
+- bottom bit reserved as tag to signify if value is a Smi (small integer) or a pointer to an object
 
 [watch](https://youtu.be/UJPdhx5zTaw?t=10m05ss) | [slide](http://v8-io12.appspot.com/index.html#35)
 
@@ -57,18 +57,18 @@ _find the previous version of this document at
 
 or
 
-| 31-bit-signed integer (SMI) | 0 |
+| 31-bit-signed integer (Smi) | 0 |
 ```
 
 - numbers bigger than 31 bits are boxed
 - stored inside an object referenced via a pointer
 - adds extra overhead (at a minimum an extra lookup)
-- on 64 bit architectures SMIs are `32-bit-signed` instead of the `31-bit-signed` on 32 bit
+- on 64 bit architectures Smis are `32-bit-signed` instead of the `31-bit-signed` on 32 bit
   architectures
 
 ### Considerations
 
-- prefer SMIs for numeric values whenever possible
+- prefer Smis for numeric values whenever possible
 
 ## Objects
 
@@ -378,7 +378,7 @@ class Point {
 [read](https://v8project.blogspot.com/2017/09/elements-kinds-in-v8.html)
 
 - fast *elements kinds* in order of increasing generality:
-  - fast SMIs (small integers)
+  - fast Smis (small integers)
   - fast doubles (Doubles stored in unboxed representation)
   - fast values (strings or other objects)
 
@@ -407,7 +407,7 @@ class Point {
 - if all doubles, array is unboxed aka *upgraded to fast doubles*
   - wrapped objects layed out in linear buffer of doubles
   - each element slot is 64-bit to hold a double
-  - SMIs that are currently in Array are converted to doubles
+  - Smis that are currently in Array are converted to doubles
   - very efficient access
   - storing requires no allocation as is the case for boxed doubles
   - causes hidden class change
@@ -442,7 +442,7 @@ class Point {
   array of numbers
 - when copying an array, you should avoid copying from the back (higher indices to lower
   indices) because this will almost certainly trigger dictionary mode
-- avoid elements kind transitions, i.e. edge case of adding `-0, NaN, Infinity` to a SMI array
+- avoid elements kind transitions, i.e. edge case of adding `-0, NaN, Infinity` to a Smi array
   as they are represented as doubles
 
 ## Strings

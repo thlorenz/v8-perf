@@ -65,7 +65,7 @@ _find the previous version of this document at
 - wraps objects in `Handle`s in order to track objects in memory even if they get moved (i.e. due to being promoted)
 - identifies dead sections of memory
 - GC can quickly scan [tagged words](data-types.md#efficiently-representing-values-and-tagging)
-- follows pointers and ignores SMIs and *data only* types like strings
+- follows pointers and ignores Smis and *data only* types like strings
 
 ## Cost of Allocating Memory
 
