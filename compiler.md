@@ -312,7 +312,7 @@ Once crankshaft was taken out of the mix the below pipeline was possible
 TurboFan is a simple compiler + backend responsible for the following:
 
 - instruction selection + scheduling
-  - innovative scheduling algorithm makes use of reordering freedom ([sea of nodes]()) to move
+  - innovative scheduling algorithm makes use of reordering freedom ([sea of nodes](#sea-of-nodes)) to move
     code out of loops into less frequently executed paths
 - register allocation
 - code generation
