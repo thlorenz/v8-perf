@@ -69,7 +69,7 @@ _find the previous version of this document at
 
 ##### GC roots
 
-- made up of *handles* that are created when making a reference from native code to a JS object ouside of v8
+- made up of *handles* that are created when making a reference from native code to a JS object ouside of V8
 - found in heap snapshot under **GC roots > Handle scope** and **GC roots > Global handles**
 - internal GC roots are window global object and DOM tree
 
@@ -80,8 +80,8 @@ _find the previous version of this document at
 
 - primitives are leafs or terminating nodes
 - strings stored in *VM heap* or externally (accessible via *wrapper object*)
-- *VM heap* is heap dedicated to JS objects and managed byt v8 gargabe collector
-- *native objects* stored outside of *VM heap*, not managed by v8 garbage collector and are accessed via JS *wrapper
+- *VM heap* is heap dedicated to JS objects and managed byt V8 gargabe collector
+- *native objects* stored outside of *VM heap*, not managed by V8 garbage collector and are accessed via JS *wrapper
   object*
 - *cons string* object created by concatenating strings, consists of pairs of strings that are only joined as needed
 - *arrays* objects with numeric keys, used to store large amount of data, i.e. hashtables (key-value-pair sets) are
@@ -133,7 +133,7 @@ _find the previous version of this document at
 
 ### DevTools Allocation Timeline
 
-[watch](http://youtu.be/LaxbdIyBkL0?t=50m33s) |
+[watch](https://youtu.be/LaxbdIyBkL0?t=50m33s) |
 [read](https://developers.google.com/web/tools/chrome-devtools/memory-problems/allocation-profiler)
 (slightly out of date especially WRT naming, but does show the allocation timeline profiler) |
 [read](https://developers.google.com/web/tools/chrome-devtools/memory-problems/#identify_js_heap_memory_leaks_with_allocation_timelines)
@@ -145,7 +145,7 @@ _find the previous version of this document at
 #### Allocation Stack
 
 [slides](https://speakerdeck.com/addyosmani/javascript-memory-management-masterclass?slide=102)
-[watch](http://youtu.be/LaxbdIyBkL0?t=51m30s)
+[watch](https://youtu.be/LaxbdIyBkL0?t=51m30s)
 
 ![allocation-stack](assets/memory-allocation-stack.png)
 
@@ -230,7 +230,7 @@ Properties and values are colored according to their types.
 - *a:property* regular propertye, i.e. `foo.bar`
 - *0:element* numeric index property, i.e. `arr[0]`
 - *a:context var* variable in function context, accessible by name from inside function closure
-- *a:system prop* added by JS VM and not accessible from JS code, i.e. v8 internal objects
+- *a:system prop* added by JS VM and not accessible from JS code, i.e. V8 internal objects
 - yellow objects are referenced by JS
 - red objects are detached nodes which are referenced by yellow background object
 
@@ -328,7 +328,7 @@ Additional entry points only present when profiling a Node.js app:
 [read](http://zetafleet.com/blog/google-chromes-heap-profiler-and-memory-timeline)
 
 - source of unintentional memory retention
-- v8 will not clean up **any** memory of a closure untiil **all** members of the closure have gone out of scope
+- V8 will not clean up **any** memory of a closure untiil **all** members of the closure have gone out of scope
 - therefore they should be used sparingly to avoid unnecessary [semantic
   garbage](https://en.wikipedia.org/wiki/Garbage_(computer_science))
 
@@ -359,9 +359,9 @@ Use at least three snapshots and compare those.
 
 [read](https://v8project.blogspot.com/2017/02/one-small-step-for-chrome-one-giant.html) _One small step for Chrome, one giant heap for V8_
 
-- v8's ability to dynamically increase its heap limit allows taking heap snapshot when close to
+- V8's ability to dynamically increase its heap limit allows taking heap snapshot when close to
   running out of memory
-- `set_max_old_space_size` is exposed to v8 embedders as part of the _ResourceConstraints_ API
+- `set_max_old_space_size` is exposed to V8 embedders as part of the _ResourceConstraints_ API
   to allow them to increase the heap limit
 - DevTools added feature to pause application when close to running out of memory
   1. pauses application and increases heap limit which allows taking a snapshot, inspect the
@@ -377,7 +377,7 @@ The usefulness of the information presented in the views depends on how you auth
 rules to make your code more debuggable.
 
 Anonymous functions, i.e. `function() { ... }` show as `(anonymous)` and thus are hard to find
-in your code. v8 + DevTools are getting smarter about this, i.e. for arrow functions where
+in your code. V8 + DevTools are getting smarter about this, i.e. for arrow functions where
 `setTimeout(() => { ... }, TIMEOUT)` will show as `setTimeout` and you can navigate to the
 function during a live profiling session.
 

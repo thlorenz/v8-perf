@@ -36,7 +36,7 @@ store JavaScript data and how it relates to the performance of your code.
 The [v8 compiler](compiler.md) document outlines the v8 compiler pipeline including the
 Ignition Interpreter and TurboFan optimizing compiler. It explains how information about your
 code is executed to allow optimizations, how and when deoptimizations occur and how features
-like the CodeStubAssembler allowed reduce performance bottlenecks found in the [older
+like the CodeStubAssembler allowed reducing performance bottlenecks found in the [older
 pipeline](crankshaft/compiler.md).
 
 ### Language Features

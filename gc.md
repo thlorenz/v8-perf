@@ -1,4 +1,4 @@
-# v8 Garbage Collector
+# V8 Garbage Collector
 
 _find the previous version of this document at
 [crankshaft/gc.md](crankshaft/gc.md)_
@@ -69,7 +69,7 @@ _find the previous version of this document at
 
 ## Cost of Allocating Memory
 
-[watch](http://youtu.be/VhpdsjBUS3g?t=10m54s)
+[watch](https://youtu.be/VhpdsjBUS3g?t=10m54s)
 
 - cheap to allocate memory
 - expensive to collect when memory pool is exhausted
@@ -87,7 +87,7 @@ everything else is garbage*
 
 ## Two Generations
 
-[watch](http://youtu.be/VhpdsjBUS3g?t=11m24s)
+[watch](https://youtu.be/VhpdsjBUS3g?t=11m24s)
 
 - object heap segmented into two parts (well kind of, [see below](#heap-organization-in-detail))
 - **New Space** in which objects aka **Young Generation** are created
@@ -181,13 +181,13 @@ everything else is garbage*
 
 ### ToSpace, FromSpace, Memory Exhaustion
 
-[watch](http://youtu.be/VhpdsjBUS3g?t=13m40s) | [code](https://cs.chromium.org/chromium/src/v8/src/heap/spaces.h)
+[watch](https://youtu.be/VhpdsjBUS3g?t=13m40s) | [code](https://cs.chromium.org/chromium/src/v8/src/heap/spaces.h)
 
 - ToSpace is used to allocate values i.e. `new`
 - FromSpace is used by GC when collection is triggered
 - ToSpace and FromSpace have **exact same size**
 - large space overhead (need ToSpace and FromSpace) and therefore only suitable for small **New Space**
-- when **New Space** allocation pointer reaches end of **New Space** v8 triggers minor garbage collection cycle
+- when **New Space** allocation pointer reaches end of **New Space** V8 triggers minor garbage collection cycle
   called **scavenge** or [copying garbage
   collection](http://www.memorymanagement.org/glossary/c.html#term-copying-garbage-collection)
 - scavenge algorithm similar to the [Halstead semispace copying collector](https://www.cs.cmu.edu/~guyb/papers/gc2001.pdf)
@@ -228,7 +228,7 @@ ToSpace starts as unallocated memory.
 
 #### Considerations
 
-[watch](http://youtu.be/VhpdsjBUS3g?t=15m30s)
+[watch](https://youtu.be/VhpdsjBUS3g?t=15m30s)
 
 - every allocation brings us closer to GC pause
 - even though as many steps of collection are performed in parallel, **every collection pauses our
@@ -251,7 +251,7 @@ to both partially parallelize the Old Generation and Young Generation garbage co
 - most parts of GC taken off the main thread (56% less GC on main thread)
 - optimized weak global handles
 - unified heap for full garbage collection
-- optimized v8's black allocation additions
+- optimized V8's black allocation additions
 - reduced peak memory consumption of on-heap peak memory by up to 40% and off-heap peak memory
   by 20% for low-memory devices by tuning several GC heuristics
 
@@ -259,14 +259,14 @@ to both partially parallelize the Old Generation and Young Generation garbage co
 
 [read](https://v8project.blogspot.com/2017/11/orinoco-parallel-scavenger.html)
 
-- introduced with v8 v6.2 which is part of Node.js v8
-- older v8 versions used Cheney semispace copying garbage collector that divides young
+- introduced with V8 v6.2 which is part of Node.js V8
+- older V8 versions used Cheney semispace copying garbage collector that divides young
   generation in two equal halves and [performed moving/copying of objects that survived GC
   synchronously](crankshaft/gc.md#tospace-fromspace-memory-exhaustion)
   - single threaded scavenger made sense on single-core environments, but at this point Chrome,
-    Node.js and thus v8 runs in many multicore scenarios
+    Node.js and thus V8 runs in many multicore scenarios
 - new algorithm similar to the [Halstead semispace copying collector](https://www.cs.cmu.edu/~guyb/papers/gc2001.pdf)
-  except that v8 uses dynamic instead of static _work stealing_ across multiple threads
+  except that V8 uses dynamic instead of static _work stealing_ across multiple threads
 
 #### Scavenger Phases
 
@@ -314,7 +314,7 @@ of worker tasks.
 
 - GC tracks pointers to objects which have to be updated whenever an object is moved
 - all pointers to old location need to be updated to object's new location
-- v8 uses a _rembered set_ of _interesting pointers_ on the heap
+- V8 uses a _rembered set_ of _interesting pointers_ on the heap
 - an object is _interesting_ if it may move during garbage collection or if it lives in heavily
   fragmented pages and thus will be moved during compaction
 - _remembered sets_ are organized to simplify parallelization and ensure that threads get
@@ -352,7 +352,7 @@ of worker tasks.
 
 ### Collection Steps
 
-[watch](http://youtu.be/VhpdsjBUS3g?t=12m30s)
+[watch](https://youtu.be/VhpdsjBUS3g?t=12m30s)
 
 - parts of collection run concurrent with mutator, i.e. runs on same thread our JavaScript is executed on
 - [incremental marking/collection](http://www.memorymanagement.org/glossary/i.html#term-incremental-garbage-collection)
@@ -402,7 +402,7 @@ of worker tasks.
 
 #### Sweep and Compact
 
-- both work at **v8** page level == 1MB contiguous chunks (different from [virtual memory
+- both work at **V8** page level == 1MB contiguous chunks (different from [virtual memory
   pages](http://www.memorymanagement.org/glossary/p.html#page))
 
 #### Sweep
@@ -447,7 +447,7 @@ last paragraph
 
 ## Resources
 
-- [video: accelerating oz with v8](https://www.youtube.com/watch?v=VhpdsjBUS3g)
-- [v8-design](https://github.com/v8/v8/wiki/Design%20Elements#efficient-garbage-collection)
-- [tour of v8: garbage collection - 2013](http://jayconrod.com/posts/55/a-tour-of-v8-garbage-collection)
+- [video: accelerating oz with V8](https://www.youtube.com/watch?v=VhpdsjBUS3g)
+- [V8-design](https://github.com/v8/v8/wiki/Design%20Elements#efficient-garbage-collection)
+- [tour of V8: garbage collection - 2013](http://jayconrod.com/posts/55/a-tour-of-v8-garbage-collection)
 - [memory management reference](http://www.memorymanagement.org/)

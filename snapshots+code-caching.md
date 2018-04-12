@@ -1,6 +1,6 @@
 # Snapshots and Code Caching
 
-This document explains techniques used by v8 in order to avoid having to re-compile and
+This document explains techniques used by V8 in order to avoid having to re-compile and
 optimized JavaScript whenever an application that embeds it (i.e. Chrome or Node.js) starts up
 fresh.
 
@@ -22,20 +22,20 @@ fresh.
 
 - lessens overhead of parsing + compiling script
 - uses cached data to recreate previous compilation result
-- exposed via v8's API to embedders
+- exposed via V8's API to embedders
   - pass `v8::ScriptCompiler::kProduceCodeCache` as an option when compiling script
   - cached data is attached to source object to be retrieved via
     `v8::ScriptCompiler::Source::GetCachedData`
   - can be persisted for later
   - later cache data can be attached to the source object and passed
-    `v8::ScriptCompiler::kConsumeCodeCache` as an option to cause v8 to bypass compileing the
+    `v8::ScriptCompiler::kConsumeCodeCache` as an option to cause V8 to bypass compileing the
     code and deserialize the provided cache data instead
-- v8 6.6 caches top level code as well as code generated _after_ script's top-level execution,
+- V8 6.6 caches top level code as well as code generated _after_ script's top-level execution,
   which means that lazily compiled functions are included in the cache
 
 ### Chrome's Use of Code Caching
 
-Since Chrome embeds v8 it can make use of Code Caching and does so as follows.
+Since Chrome embeds V8 it can make use of Code Caching and does so as follows.
 
 - cold load: page loaded for the first time and thus no cached data is available
 - warm load: page loaded before and caches compiled code along with the script file in disk
@@ -52,7 +52,7 @@ Since Chrome embeds v8 it can make use of Code Caching and does so as follows.
 
 ### Custom Startup Snapshots
 
-- v8 uses snapshots and lazy deserialization to _retrieve_ previously optimized code for builtin
+- V8 uses snapshots and lazy deserialization to _retrieve_ previously optimized code for builtin
   functions
 - powerful snapshot API exposed to embedders via `v8::SnapshotCreator`
 - among other things this API allows embedders to provide an additional script to customize a
@@ -60,8 +60,8 @@ Since Chrome embeds v8 it can make use of Code Caching and does so as follows.
 - new contexts created from the snapshot are initialized in a state obtained _after_ the script
   executed
 - native C++ functions are recognized and encoded by the serializer as long as they have been
-  registered with v8
-- serializer cannot _directly_ capture state outside of v8, thus outside state needs to be
+  registered with V8
+- serializer cannot _directly_ capture state outside of V8, thus outside state needs to be
   attached to a JavaScript object via _embedder fields_
 
 ### Lazy Deserialization
@@ -74,7 +74,7 @@ Since Chrome embeds v8 it can make use of Code Caching and does so as follows.
 - starting offset of each code object is kept in a dedicated section within builtins area
 - additionally implemented lazy deserializations for bytecode handlers, which contain logic to
   execute each bytecode within Ignition interpreter
-- enabled in v8 v6.4 resulting in average v8's heap size savings of 540 KB
+- enabled in V8 v6.4 resulting in average V8's heap size savings of 540 KB
 
 ### Resources
 
