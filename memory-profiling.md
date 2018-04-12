@@ -22,7 +22,8 @@ _find the previous version of this document at
     - [Allocation Stack](#allocation-stack)
     - [Recording Allocation Timeline with Node.js](#recording-allocation-timeline-with-nodejs)
   - [DevTools Allocation Profile](#devtools-allocation-profile)
-    - [Recording Allocation Profile with Node.js](#recording-allocation-profile-with-nodejs)
+    - [Recording Allocation Profile with Node.js Manually](#recording-allocation-profile-with-nodejs-manually)
+    - [Recording Allocation Profile with Node.js Programatically](#recording-allocation-profile-with-nodejs-programatically)
   - [DevTools Heap Snapshots](#devtools-heap-snapshots)
     - [Taking Heap Snapshot with Node.js](#taking-heap-snapshot-with-nodejs)
     - [Views](#views)
@@ -175,9 +176,7 @@ _find the previous version of this document at
 - in case of memory leaks or performance issues due to lots of allocatd objects it can be used
   to track down which functions allocate most memory
 
-![memory-hog-allocation-timeline](assets/memory-allocation-timeline.gif)
-
-#### Recording Allocation Profile with Node.js
+#### Recording Allocation Profile with Node.js Manually
 
 - run app via `node --inspect` or `node --inspect-brk`
 - open DevTools anywhere and click on the Node.js icon in the upper left corner to open a
@@ -189,6 +188,15 @@ _find the previous version of this document at
   the left
 - you will see a function execution stack with the functions that allocated the most memory or
   had children that executed lots of memory being the widest
+
+![memory-hog-allocation-profile](assets/memory-allocation-profile.gif)
+
+#### Recording Allocation Profile with Node.js Programatically
+
+- the [sampling-heap-profiler](https://github.com/v8/sampling-heap-profiler) package allows to
+  trigger and stop heap samples programatically and write them to a file
+- supposed to be lightweight enough for in-production use on servers
+- generated snapshots can be saved offline, and be opened in DevTools later
 
 ### DevTools Heap Snapshots
 
