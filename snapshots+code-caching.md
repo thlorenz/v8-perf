@@ -24,6 +24,8 @@ fresh.
 - uses cached data to recreate previous compilation result
 - exposed via V8's API to embedders
   - pass `v8::ScriptCompiler::kProduceCodeCache` as an option when compiling script
+    - Note: V8 is deprecating `v8::ScriptCompiler::kProduceCodeCache` in favor of
+      `v8::ScriptCompiler::GetCodeCache` 
   - cached data is attached to source object to be retrieved via
     `v8::ScriptCompiler::Source::GetCachedData`
   - can be persisted for later
@@ -40,6 +42,8 @@ Since Chrome embeds V8 it can make use of Code Caching and does so as follows.
 - cold load: page loaded for the first time and thus no cached data is available
 - warm load: page loaded before and caches compiled code along with the script file in disk
   cache
+  - to qualify, the last load needs to be within the last 72 hours and the script source be
+    larger than 1KB
 - hot load: page loaded twice before and thus can use the cached compiled code instead of
   parsing + compiling the script again
 
@@ -47,6 +51,7 @@ Since Chrome embeds V8 it can make use of Code Caching and does so as follows.
 
 - [Code caching - 2015](https://v8project.blogspot.com/2015/07/code-caching.html)
 - [Code caching after execution - 2018](https://v8project.blogspot.com/2018/03/v8-release-66.html)
+- [V8 ScriptRunner source](https://cs.chromium.org/chromium/src/third_party/blink/renderer/bindings/core/v8/v8_script_runner.cc?l=269&rcl=c59618d0f92b57e4dcfb903f3c99bb0574eac340)
 
 ## Startup Snapshots
 
