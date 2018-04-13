@@ -238,8 +238,11 @@ ToSpace starts as unallocated memory.
 - even though as many steps of collection are performed in parallel and thus average GC pauses
   are small (1ms - 10ms) on average
 - however **every collection pauses our app**
+- avoid referencing short-lived objects longer than necessary, since as long as they die on
+  the next Scavenge they incurr almost no cost to the GC, but if they need to be copied, they
+  do
 - try to pre-alloc values ahead of time if the are known when your application initializes and
-  don't change after that
+  don't change after that, however don't go overboard, i.e. don't sacrifice code quality
 
 ## Orinoco Garbage Collector
 
