@@ -86,7 +86,8 @@ everything else is garbage*
 - i.e. not referenced by a root node or another live object
 - global objects are roots (always accessible)
 - objects pointed to by local variables are roots (stack is scanned for roots)
-- DOM elements are roots (may be weakly referenced)
+- DOM element's liveliness is determined via cross-component tracing by tracing from JavaScript
+  to the C++ implementation of the DOM and back
 
 ## Two Generations
 
@@ -236,7 +237,7 @@ ToSpace starts as unallocated memory.
 - every allocation brings us closer to GC pause
 - even though as many steps of collection are performed in parallel and thus average GC pauses
   are small (1ms - 10ms) on average
-- however **every collection pauses our app** 
+- however **every collection pauses our app**
 - try to pre-alloc values ahead of time if the are known when your application initializes and
   don't change after that
 
@@ -456,3 +457,4 @@ last paragraph
 - [V8-design](https://github.com/v8/v8/wiki/Design%20Elements#efficient-garbage-collection)
 - [tour of V8: garbage collection - 2013](http://jayconrod.com/posts/55/a-tour-of-v8-garbage-collection)
 - [memory management reference](http://www.memorymanagement.org/)
+- [Tracing from JS to the DOM and back again](https://v8project.blogspot.de/2018/03/tracing-js-dom.html)
