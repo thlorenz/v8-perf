@@ -14,11 +14,11 @@ _find the previous version of this document at
   - [Generational Garbage Collector](#generational-garbage-collector)
 - [Heap Organization in Detail](#heap-organization-in-detail)
   - [New Space aka Young Generation](#new-space-aka-young-generation)
-  - [Old Pointer Space](#old-pointer-space)
-  - [Old Data Space](#old-data-space)
+  - [Read Only Space](#read-only-space)
+  - [Old Space](#old-space)
   - [Large Object Space](#large-object-space)
   - [Code Space](#code-space)
-  - [Cell Space, Property Cell Space, Map Space](#cell-space-property-cell-space-map-space)
+  - [Map Space](#map-space)
   - [Pages](#pages)
 - [Young Generation](#young-generation)
   - [ToSpace, FromSpace, Memory Exhaustion](#tospace-fromspace-memory-exhaustion)
@@ -56,12 +56,15 @@ _find the previous version of this document at
 
 - ensures fast object allocation, short garbage collection pauses and no memory fragmentation
 - **stop-the-world**,
-  [generational](http://www.memorymanagement.org/glossary/g.html#term-generational-garbage-collection) accurate garbage collector
-- stops program execution when performing steps of garbage collections cycle that can only run
+  [generational](http://www.memorymanagement.org/glossary/g.html#term-generational-garbage-collection)
+  precise garbage collector
+- stops program execution when performing steps of young generation garbage collections cycle that can only run
   synchronously
 - many steps are performed in parallel, see [Orinoco Garbage
   Collector](#orinoco-garbage-collector) and only part of the object heap is processed in most
   garbage collection cycles to minimize impact on main thread execution
+- [mark compact](#mark-sweep-and-mark-compact) is performed
+  [incrementally](#incremental-mark-and-lazy-sweep) and therefore not _stop-the-world_
 - wraps objects in `Handle`s in order to track objects in memory even if they get moved (i.e. due to being promoted)
 - identifies dead sections of memory
 - GC can quickly scan [tagged words](data-types.md#efficiently-representing-values-and-tagging)
@@ -89,9 +92,13 @@ everything else is garbage*
 
 [watch](https://youtu.be/VhpdsjBUS3g?t=11m24s)
 
-- object heap segmented into two parts (well kind of, [see below](#heap-organization-in-detail))
-- **New Space** in which objects aka **Young Generation** are created
-- **Old Space** into which objects that survived a GC cycle aka **Old Generation** are promoted
+- object heap segmented into two parts, _Young Generation_ and _Old Generation_
+- _Young Generation_ consists of _New Space_ in which new objects are allocated
+- _Old Generation_ is divided into multiple parts like _Old Space_, _Map Space_, _Large
+  Object Space_
+- _Old Space_ stores objects that survived enough GC cycles to be promoted to the _Old
+  Generation_
+- for more details [see below](#heap-organization-in-detail)
 
 ### Generational Garbage Collector
 
@@ -125,41 +132,37 @@ everything else is garbage*
 - independent of other spaces
 - between 1 and 8 MB
 
-### Old Pointer Space
+### Read Only Space
 
-- contains objects that may have pointers to other objects
-- objects surviving two collections while in **New Space** are moved here
+- immortal, immovable and immutable objects
 
-### Old Data Space
+### Old Space
 
-- contains *raw data* objects -- **no pointers**
-  - strings
-  - boxed numbers
-  - arrays of unboxed doubles
-- objects surviving **New Space** long enough are moved here
+- objects surviving _New Space_ long enough are moved here
+- may contain pointers to _New Space_
 
 ### Large Object Space
 
-- objects exceeding size limits of other spaces
+- promoted large objects (exceeding size limits of other spaces)
 - each object gets its own [`mmap`](http://www.memorymanagement.org/glossary/m.html#mmap)d region of memory
 - these objects are never moved by GC
 
 ### Code Space
 
-- code objects containing JITed instructions
-- only space with executable memory with the exception of **Large Object Space**
+- contains executable code and therefore is marked _executable_
+- no pointers to _New Space_
 
-### Cell Space, Property Cell Space, Map Space
+### Map Space
 
-- each of these specialized spaces places constraints on size and the type of objects they point to
-- simplifies collection
+- contains map objects only
 
 ### Pages
 
 - each space divided into set of pages
 - page is **contiguous** chunk of memory allocated via `mmap`
-- page is 1MB in size and 1MB aligned
+- page is 512KB in size and 512KB aligned
   - exception **Large Object Space** where page can be larger
+  - page size will most likely decrease in the future
 - page contains header
   - flags and meta-data
   - marking bitmap to indicate which objects are alive
@@ -231,9 +234,11 @@ ToSpace starts as unallocated memory.
 [watch](https://youtu.be/VhpdsjBUS3g?t=15m30s)
 
 - every allocation brings us closer to GC pause
-- even though as many steps of collection are performed in parallel, **every collection pauses our
-  app**
-- try to pre-alloc as much as possible ahead of time
+- even though as many steps of collection are performed in parallel and thus average GC pauses
+  are small (1ms - 10ms) on average
+- however **every collection pauses our app** 
+- try to pre-alloc values ahead of time if the are known when your application initializes and
+  don't change after that
 
 ## Orinoco Garbage Collector
 
