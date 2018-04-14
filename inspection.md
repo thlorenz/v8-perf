@@ -92,7 +92,7 @@ Analyse performance only once you have a problem in a top down manner like so:
 - three data points per function
   - **Inclusive Time**: time spent in function *including* its children
   - **Exclusive Time**: time spent in function *excluding* its children
-  - **Call Count**: number of times the functino was called
+  - **Call Count**: number of times the function was called
 - data points are taken at much higher frequency than sampling
 - higher cost than sampling dut to instrumentation
 - goal of optimization is to **minimize inclusive time**
