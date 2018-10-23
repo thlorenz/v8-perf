@@ -247,7 +247,7 @@ ToSpace starts as unallocated memory.
 ## Orinoco Garbage Collector
 
 [watch orinoco overview]([watch](https://youtu.be/EdFDJANJJLs?t=15m10s)) | [jank and concurrent GC](https://youtu.be/HDuSEbLWyOY?t=5m14s) |
-[read](https://v8project.blogspot.com/2016/04/jank-busters-part-two-orinoco.html)
+[read](https://v8.dev/blog/orinoco)
 
 The Orinioco garbage collector was created in an attempt to lessen the time that our
 application stops due to garbage collection by performing as many steps as possible in
@@ -266,7 +266,7 @@ to both partially parallelize the Old Generation and Young Generation garbage co
 
 ### Parallel Scavenger
 
-[read](https://v8project.blogspot.com/2017/11/orinoco-parallel-scavenger.html)
+[read](https://v8.dev/blog/orinoco-parallel-scavenger)
 
 - introduced with V8 v6.2 which is part of Node.js V8
 - older V8 versions used Cheney semispace copying garbage collector that divides young
@@ -319,7 +319,7 @@ of worker tasks.
 
 #### Tracking Pointers
 
-[read](https://v8project.blogspot.com/2016/04/jank-busters-part-two-orinoco.html)
+[read](https://v8.dev/blog/orinoco)
 
 - GC tracks pointers to objects which have to be updated whenever an object is moved
 - all pointers to old location need to be updated to object's new location
@@ -332,7 +332,7 @@ of worker tasks.
 
 #### Black Allocation
 
-[read](https://v8project.blogspot.com/2016/04/jank-busters-part-two-orinoco.html)
+[read](https://v8.dev/blog/orinoco)
 
 - assumption: objects recently allocated in the old generation should at least survive the next
   old generation garbage collection and thus are _colored_ black
@@ -341,16 +341,16 @@ of worker tasks.
 
 ### Resources
 
-- [Getting Garbage Collection for Free](https://v8project.blogspot.com/2015/08/getting-garbage-collection-for-free.html)
+- [Getting Garbage Collection for Free](https://v8.dev/blog/free-garbage-collection)
   _maybe outdated except the scheduling part at the beginning_?
-- [Jank Busters Part One](https://v8project.blogspot.com/2015/10/jank-busters-part-one.html)
+- [Jank Busters Part One](https://v8.dev/blog/jank-busters)
   _outdated_?
-- [Jank Busters Part Two: Orinoco](https://v8project.blogspot.com/2016/04/jank-busters-part-two-orinoco.html)
+- [Jank Busters Part Two: Orinoco](https://v8.dev/blog/orinoco)
   _outdated_ except for paging, pointer tracking and black allocation?
-- [V8 Release 5.3](https://v8project.blogspot.com/2016/07/v8-release-53.html)
-- [V8 Release 5.4](https://v8project.blogspot.com/2016/09/v8-release-54.html)
-- [Optimizing V8 memory consumption](https://v8project.blogspot.com/2016/10/fall-cleaning-optimizing-v8-memory.html)
-- [Orinoco: young generation garbage collection](https://v8project.blogspot.com/2017/11/orinoco-parallel-scavenger.html)
+- [V8 Release 5.3](https://v8.dev/blog/v8-release-53)
+- [V8 Release 5.4](https://v8.dev/blog/v8-release-54)
+- [Optimizing V8 memory consumption](https://v8.dev/blog/optimizing-v8-memory)
+- [Orinoco: young generation garbage collection](https://v8.dev/blog/orinoco-parallel-scavenger)
 
 ## Old Generation Garbage Collector Deep Dive
 

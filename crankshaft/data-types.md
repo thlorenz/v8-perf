@@ -321,7 +321,7 @@ Point.prototype.pointDistance = function () { /* calculates distance */ }
 
 [read](http://jayconrod.com/posts/52/a-tour-of-v8-object-representation) *Numbered properties: fast elements*
 
-[read]((https://v8project.blogspot.com/2017/08/fast-properties.html)
+[read]((https://v8.dev/blog/fast-properties)
 
 - v8 has two methods for storing arrays, *fast elements* and *dictionary elements* 
 
@@ -349,7 +349,7 @@ Point.prototype.pointDistance = function () { /* calculates distance */ }
 
 #### Elements Kinds
 
-[read](https://v8project.blogspot.com/2017/09/elements-kinds-in-v8.html)
+[read](https://v8.dev/blog/elements-kinds)
 
 - fast *elements kinds* in order of increasing generality:
   - fast SMIs (small integers)
@@ -453,5 +453,5 @@ map |len |hash|characters
 - [tour of v8: garbage collection - 2013](http://jayconrod.com/posts/55/a-tour-of-v8-garbage-collection)
 - [tour of v8: object representation - 2013](http://jayconrod.com/posts/52/a-tour-of-v8-object-representation)
 - [v8-design](https://developers.google.com/v8/design#garb_coll)
-- [Fast Properties in V8 - 2017](https://v8project.blogspot.com/2017/08/fast-properties.html)
-- [“Elements kinds” in V8 - 2017](https://v8project.blogspot.com/2017/09/elements-kinds-in-v8.html)
+- [Fast Properties in V8 - 2017](https://v8.dev/blog/fast-properties)
+- [“Elements kinds” in V8 - 2017](https://v8.dev/blog/elements-kinds)
