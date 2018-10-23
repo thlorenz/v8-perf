@@ -115,7 +115,7 @@ arr.map(convert.bind(this))
 - [A new approach to Function.prototype.bind - 2015](http://benediktmeurer.de/2015/12/25/a-new-approach-to-function-prototype-bind/)
 - [Optimizing bound functions further - 2016](http://benediktmeurer.de/2016/01/14/optimizing-bound-functions-further/)
 - [bound function exotic objects](https://tc39.github.io/ecma262/#sec-bound-function-exotic-objects)
-- [V8 release v6.4 - 2017](https://v8project.blogspot.com/2017/12/v8-release-64.html)
+- [V8 release v6.4 - 2017](https://v8.dev/blog/v8-release-64)
 
 ## instanceof and @@hasInstance
 
@@ -152,7 +152,7 @@ arr.map(convert.bind(this))
 
 ### Resources
 
-- [V8 Release 6.1 - 2017](https://v8project.blogspot.com/2017/08/v8-release-61.html)
+- [V8 Release 6.1 - 2017](https://v8.dev/blog/v8-release-61)
 
 ## Array Builtins
 
@@ -164,8 +164,8 @@ arr.map(convert.bind(this))
   bailouts anymore
 
 - [V8: Behind the Scenes (February Edition) - 2017](http://benediktmeurer.de/2017/03/01/v8-behind-the-scenes-february-edition/)
-- [V8 Release 6.1 - 2017](https://v8project.blogspot.com/2017/08/v8-release-61.html)
-- [V8 release v6.5 - 2018](https://v8project.blogspot.com/2018/02/v8-release-65.html)
+- [V8 Release 6.1 - 2017](https://v8.dev/blog/v8-release-61)
+- [V8 release v6.5 - 2018](https://v8.dev/blog/v8-release-65)
 
 ## const
 
@@ -207,7 +207,7 @@ arr.map(convert.bind(this))
 - avoid allocation of `iterResult` via _store-load propagation_, _escape analysis_ and _scalar
   replacement of aggregates_
 - avoid allocation of the _iterator_
-- fully implemented in JavaScript via [CodeStubAssembler](https://github.com/v8/v8/wiki/CodeStubAssembler-Builtins)
+- fully implemented in JavaScript via [CodeStubAssembler](https://v8.dev/docs/csa-builtins)
 - only calls to C++ during GC
 - full optimization now possible due to TurboFan's ability to optimize functions that include a
   `try/catch` statement
@@ -219,7 +219,7 @@ arr.map(convert.bind(this))
 ### Resources
 
 - [Faster Collection Iterators - 2017](http://benediktmeurer.de/2017/07/14/faster-collection-iterators/)
-- [V8 Release 6.1 - 2017](https://v8project.blogspot.com/2017/08/v8-release-61.html)
+- [V8 Release 6.1 - 2017](https://v8.dev/blog/v8-release-61)
 
 ## Iterating Maps and Sets via `forEach` and Callbacks
 
@@ -235,7 +235,7 @@ arr.map(convert.bind(this))
 ### What Changed?
 
 - `forEach` builtins were ported to the
-  [CodeStubAssembler](https://github.com/v8/v8/wiki/CodeStubAssembler-Builtins) which lead to
+  [CodeStubAssembler](https://v8.dev/docs/csa-builtins) which lead to
   a significant performance improvement
 - since now no C++ is in play these function can further be optimized and inlined by TurboFan
 
@@ -250,7 +250,7 @@ arr.map(convert.bind(this))
 ### Resources
 
 - [Faster Collection Iterators - Callback Based Iteration - 2017](http://benediktmeurer.de/2017/07/14/faster-collection-iterators/#callback-based-iteration)
-- [V8 Release 6.1 - 2017](https://v8project.blogspot.com/2017/08/v8-release-61.html)
+- [V8 Release 6.1 - 2017](https://v8.dev/blog/v8-release-61)
 
 ## Iterating Object properties via for in
 
@@ -311,7 +311,7 @@ for (const prop in obj) {
 
 - [Restoring for..in peak performance - 2017](http://benediktmeurer.de/2017/09/07/restoring-for-in-peak-performance/)
 - [Require Guarding for-in](https://eslint.org/docs/rules/guard-for-in)
-- [Fast For-In in V8 - 2017](https://v8project.blogspot.com/2017/03/fast-for-in-in-v8.html)
+- [Fast For-In in V8 - 2017](https://v8.dev/blog/fast-for-in)
 
 ## Object Constructor Subclassing and Class Factories
 
@@ -397,8 +397,8 @@ const FooBar = createClassBasedOn(Bar)
 
 ### Resources
 
-- [Speeding up V8 Regular Expressions - 2017](https://v8project.blogspot.com/2017/01/speeding-up-v8-regular-expressions.html)
-- [V8 release v6.4 - 2017](https://v8project.blogspot.com/2017/12/v8-release-64.html)
+- [Speeding up V8 Regular Expressions - 2017](https://v8.dev/blog/speeding-up-regular-expressions)
+- [V8 release v6.4 - 2017](https://v8.dev/blog/v8-release-64)
 - [RegExp named capture groups - 2017](http://2ality.com/2017/05/regexp-named-capture-groups.html#named-capture-groups)
 
 
@@ -412,7 +412,7 @@ const FooBar = createClassBasedOn(Bar)
 
 ### Resources
 
-- [High-performance ES2015 and beyond - 2017](https://v8project.blogspot.com/2017/02/high-performance-es2015-and-beyond.html)
+- [High-performance ES2015 and beyond - 2017](https://v8.dev/blog/high-performance-es2015)
 
 ## Promises Async/Await
 
@@ -425,7 +425,7 @@ const FooBar = createClassBasedOn(Bar)
 
 ### Resources
 
-- [V8 Release 5.7 - 2017](https://v8project.blogspot.com/2017/02/v8-release-57.html)k
+- [V8 Release 5.7 - 2017](https://v8.dev/blog/v8-release-57)k
 
 ## Generators
 
@@ -437,7 +437,7 @@ const FooBar = createClassBasedOn(Bar)
 
 ### Resources
 
-- [High-performance ES2015 and beyond - 2017](https://v8project.blogspot.com/2017/02/high-performance-es2015-and-beyond.html)
+- [High-performance ES2015 and beyond - 2017](https://v8.dev/blog/high-performance-es2015)
 
 ## Proxies
 
@@ -462,4 +462,4 @@ const FooBar = createClassBasedOn(Bar)
 
 ### Resources
 
-- [Optimizing ES2015 proxies in V8 - 2017](https://v8project.blogspot.com/2017/10/optimizing-proxies.html)
+- [Optimizing ES2015 proxies in V8 - 2017](https://v8.dev/blog/optimizing-proxies)

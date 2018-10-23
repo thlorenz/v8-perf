@@ -365,7 +365,7 @@ Use at least three snapshots and compare those.
 
 #### Dynamic Heap Limit and Large HeapSnapshots
 
-[read](https://v8project.blogspot.com/2017/02/one-small-step-for-chrome-one-giant.html) _One small step for Chrome, one giant heap for V8_
+[read](https://v8.dev/blog/heap-size-limit) _One small step for Chrome, one giant heap for V8_
 
 - V8's ability to dynamically increase its heap limit allows taking heap snapshot when close to
   running out of memory

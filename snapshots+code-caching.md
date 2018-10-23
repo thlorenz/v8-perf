@@ -49,8 +49,8 @@ Since Chrome embeds V8 it can make use of Code Caching and does so as follows.
 
 ### Resources
 
-- [Code caching - 2015](https://v8project.blogspot.com/2015/07/code-caching.html)
-- [Code caching after execution - 2018](https://v8project.blogspot.com/2018/03/v8-release-66.html)
+- [Code caching - 2015](https://v8.dev/blog/code-caching)
+- [Code caching after execution - 2018](https://v8.dev/blog/v8-release-66)
 - [V8 ScriptRunner source](https://cs.chromium.org/chromium/src/third_party/blink/renderer/bindings/core/v8/v8_script_runner.cc?l=269&rcl=c59618d0f92b57e4dcfb903f3c99bb0574eac340)
 
 ## Startup Snapshots
@@ -71,7 +71,7 @@ Since Chrome embeds V8 it can make use of Code Caching and does so as follows.
 
 ### Lazy Deserialization
 
-[read](https://v8project.blogspot.com/2018/02/lazy-deserialization.html)
+[read](https://v8.dev/blog/lazy-deserialization)
 
 - only about 30% of builtin functions are used on average
 - deserialize builtin function from the snapshot when it is called the first time
@@ -83,8 +83,8 @@ Since Chrome embeds V8 it can make use of Code Caching and does so as follows.
 
 ### Resources
 
-- [custom startup snapshots - 2015](https://v8project.blogspot.com/2015/09/custom-startup-snapshots.html)
+- [custom startup snapshots - 2015](https://v8.dev/blog/custom-startup-snapshots)
   somewhat out of date as embedder API changed and lazy deserialization was introduced
-- [Energizing Atom with V8's custom start-up snapshot - 2017](https://v8project.blogspot.com/2017/05/energizing-atom-with-v8s-custom-start.html)
-- [Lazy deserialization - 2018](https://v8project.blogspot.com/2018/02/lazy-deserialization.html)
+- [Energizing Atom with V8's custom start-up snapshot - 2017](https://v8.dev/blog/custom-startup-snapshots)
+- [Lazy deserialization - 2018](https://v8.dev/blog/lazy-deserialization)
 - [Speeding up Node.js startup using V8 snapshot](https://docs.google.com/document/d/1YEIBdH7ocJfm6PWISKw03szNAgnstA2B3e8PZr_-Gp4/edit)

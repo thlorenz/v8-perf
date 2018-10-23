@@ -17,4 +17,4 @@
 
 ## Resources
 
-- [short doc on V8 wiki](https://github.com/v8/v8/wiki/Built-in-functions)
+- [short doc on V8 wiki](https://v8.dev/docs/builtin-functions)

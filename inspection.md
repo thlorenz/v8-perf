@@ -343,7 +343,7 @@ into the inner workings of V8.
 
 ##### Resources
 
-- [Optimizing V8 memory consumption](https://v8project.blogspot.com/2016/10/fall-cleaning-optimizing-v8-memory.html)
+- [Optimizing V8 memory consumption](https://v8.dev/blog/optimizing-v8-memory)
 
 #### Array Elements Kinds
 
@@ -382,7 +382,7 @@ elements transition [PACKED_SMI_ELEMENTS -> PACKED_DOUBLE_ELEMENTS]
 
 ##### Resources
 
-- ["Elements kinds" in V8](https://v8project.blogspot.com/2017/09/elements-kinds-in-v8.html)
+- ["Elements kinds" in V8](https://v8.dev/blog/elements-kinds)
 
 ### Tools to Inspect/Visualize V8 Operations
 

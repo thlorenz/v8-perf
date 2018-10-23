@@ -90,7 +90,7 @@ Once crankshaft was taken out of the mix the below pipeline was possible
 
 1. Parse JavaScript into an [AST (abstract syntax tree)](https://en.wikipedia.org/wiki/Abstract_syntax_tree)
 2. Generate bytecode from that AST
-3. Turn bytecode into sequence of bytecodes by the BytecodeGenerator, which is part of the [Ignition Interpreter](https://v8project.blogspot.com/2016/08/firing-up-ignition-interpreter.html)
+3. Turn bytecode into sequence of bytecodes by the BytecodeGenerator, which is part of the [Ignition Interpreter](https://v8.dev/blog/ignition-interpreter)
   - sequences are divided on a per function basis
 4. Execute bytecode sequences via Ignition and collect feedback via inline caches
   - feedback used by Ignition itself to speed up subsequent interpretation of the bytecode
@@ -207,11 +207,11 @@ Once crankshaft was taken out of the mix the below pipeline was possible
 
 ### Resources
 
-- [Digging into the TurboFan JIT](https://v8project.blogspot.com/2015/07/digging-into-turbofan-jit.html)
+- [Digging into the TurboFan JIT](https://v8.dev/blog/turbofan-jit)
 
 ## Ignition Interpreter
 
-[watch](https://youtu.be/EdFDJANJJLs?t=13m16s) | [read](https://v8project.blogspot.com/2016/08/firing-up-ignition-interpreter.html)
+[watch](https://youtu.be/EdFDJANJJLs?t=13m16s) | [read](https://v8.dev/blog/ignition-interpreter)
 
 - uses TurboFan's low-level architecture-independent macro-assembly instructions to generate
   bytecode handlers for each _opcode_
@@ -450,7 +450,7 @@ jo Deoptimize                   ; if overflowed bail
 
 ### Lazy Cleanup of Optimized Code
 
-[read](https://v8project.blogspot.com/2017/10/lazy-unlinking.html)
+[read](https://v8.dev/blog/lazy-unlinking)
 
 - code objects created during optimization are no longer useful after deoptimization
 - on deoptimization embedded fields of code object are invalidated, however code object itself
@@ -460,7 +460,7 @@ jo Deoptimize                   ; if overflowed bail
 
 ### Deoptimization Loop
 
-[read](https://v8project.blogspot.com/2018/02/v8-release-65.html)
+[read](https://v8.dev/blog/v8-release-65)
 
 - occurred when optimized code deoptimized and there was _no way to learn what went wrong_
 - one cause was altering the shape of the array in the callback function of a second order
@@ -576,7 +576,7 @@ function usePoint(point) {
 
 ## Background Compilation
 
-[read](https://v8project.blogspot.com/2018/03/background-compilation.html)
+[read](https://v8.dev/blog/background-compilation)
 
 - part of the compilation pipeline that doesn't acess objects on the JavaScript heap run on a
   background thread
@@ -626,7 +626,7 @@ Flexibility of sea of nodes approach enables the below optimizations.
 ## CodeStubAssembler
 
 [watch](https://youtu.be/M1FBosB5tjM?t=23m38s) |
-[read](https://v8project.blogspot.com/2017/11/csa.html) |
+[read](https://v8.dev/blog/csa) |
 [slides](https://docs.google.com/presentation/d/1u6bsgRBqyVY3RddMfF1ZaJ1hWmqHZiVMuPRw_iKpHlY/edit#slide=id.g17a3a2e7fd_0_114) |
 [slides](https://docs.google.com/presentation/d/1u6bsgRBqyVY3RddMfF1ZaJ1hWmqHZiVMuPRw_iKpHlY/edit#slide=id.p)
 
@@ -694,12 +694,12 @@ few examples.
 - [V8: Behind the Scenes (November Edition) - 2016](http://benediktmeurer.de/2016/11/25/v8-behind-the-scenes-november-edition/)
 - [V8: Behind the Scenes (February Edition - 2017)](http://benediktmeurer.de/2017/03/01/v8-behind-the-scenes-february-edition/)
 - [An Introduction to Speculative Optimization in V8 - 2017](http://benediktmeurer.de/2017/12/13/an-introduction-to-speculative-optimization-in-v8/)
-- [High-performance ES2015 and beyond - 2017](https://v8project.blogspot.com/2017/02/high-performance-es2015-and-beyond.html)
-- [Launching Ignition and TurboFan - 2017](https://v8project.blogspot.com/2017/05/launching-ignition-and-turbofan.html)
-- [lazy unlinking of deoptimized functions - 2017](https://v8project.blogspot.com/2017/10/lazy-unlinking.html)
-- [Taming architecture complexity in V8 — the CodeStubAssembler - 2017](https://v8project.blogspot.com/2017/11/csa.html)
-- [V8 release v6.5 - 2018](https://v8project.blogspot.com/2018/02/v8-release-65.html)
-- [Background compilation - 2018](https://v8project.blogspot.com/2018/03/background-compilation.html)
+- [High-performance ES2015 and beyond - 2017](https://v8.dev/blog/high-performance-es2015)
+- [Launching Ignition and TurboFan - 2017](https://v8.dev/blog/launching-ignition-and-turbofan)
+- [lazy unlinking of deoptimized functions - 2017](https://v8.dev/blog/lazy-unlinking)
+- [Taming architecture complexity in V8 — the CodeStubAssembler - 2017](https://v8.dev/blog/csa)
+- [V8 release v6.5 - 2018](https://v8.dev/blog/v8-release-65)
+- [Background compilation - 2018](https://v8.dev/blog/background-compilation)
 - [Sea of Nodes - 2015](http://darksi.de/d.sea-of-nodes/)
 
 ### Slides
@@ -720,4 +720,4 @@ few examples.
 
 ### More Resources
 
-- [TurboFan wiki](https://github.com/v8/v8/wiki/TurboFan)
+- [TurboFan wiki](https://v8.dev/docs/turbofan)
