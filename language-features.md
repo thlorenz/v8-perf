@@ -359,7 +359,7 @@ const FooBar = createClassBasedOn(Bar)
 - calls to [`Function.prototype.apply` with TypedArrays as a parameter](http://benediktmeurer.de/2017/10/05/connecting-the-dots/#fast-path-for-typedarrays-in-functionprototypeapply)
   were sped up which positively affected calls to `String.fromCharCode`
 - [`ArrayBuffer` view checks](http://benediktmeurer.de/2017/10/05/connecting-the-dots/#optimize-arraybuffer-view-checks)
-  were improved by optimizing `ArrayBuffer.isView` and `TypedArray.prototype[@@toStringTag]
+  were improved by optimizing `ArrayBuffer.isView` and `TypedArray.prototype[@@toStringTag]`
 - storing booleans inside TypedArrays was improved to where it now is identical to storing
   integers
 
@@ -448,7 +448,7 @@ const FooBar = createClassBasedOn(Bar)
   to happen inside the JavaScript runtime, resulting in 0 jumps between runtimes
 - this sped up numerous proxy operations
   - constructing proxies 49%-74% improvement
-  - calling proxies upt to 500% improvement
+  - calling proxies up to 500% improvement
   - [has trap](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy/handler/has)
     71%-428% improvement, larger improvement when trap is present
   - [set trap](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy/handler/set)
