@@ -190,7 +190,7 @@ arr.map(convert.bind(this))
 ## Iterating Maps and Sets via `for of`
 
 - `for of` can be used to walk any collection that is _iterable_
-- this includes `Array`s, `Map`s, `Set`s, `WeakMap`s and `WeakSet`s
+- this includes `Array`s, `Map`s, and `Set`s
 
 ### Why was it Slow?
 
