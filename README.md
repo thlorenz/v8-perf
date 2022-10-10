@@ -80,7 +80,7 @@ It's best to dig into the source to confirm assumptions about V8 performance fir
 ### source
 
 - [home of V8 source code](https://code.google.com/p/v8/)
-- [V8 code search](https://code.google.com/p/v8/codesearch)
+- [V8 code search](https://source.chromium.org/chromium/chromium/src/+/main:v8/)
 - [V8 source code mirror on github](https://github.com/v8/v8/)
 
 ### source documentation
